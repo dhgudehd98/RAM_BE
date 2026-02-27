@@ -10,8 +10,6 @@ on:
 
 jobs:
   build:
-    # "merged된 PR"일 때만 build 실행
-    if: ${{ github.event.pull_request.merged == true }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -40,7 +38,6 @@ jobs:
 
   deploy:
     needs: build
-    if: ${{ github.event.pull_request.merged == true }}
     runs-on: ubuntu-latest
     steps:
       - name: AWS EC2 SSH & Blue-Green Deploy
