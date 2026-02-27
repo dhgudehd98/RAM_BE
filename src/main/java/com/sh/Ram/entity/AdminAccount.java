@@ -9,7 +9,7 @@ import java.util.List;
 public class AdminAccount {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "adminAccount_id")
     private Long id;
 
