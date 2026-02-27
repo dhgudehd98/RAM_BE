@@ -21,6 +21,7 @@ public class Product {
     private Member member;
 
     private String name;
+    private String brand;
 
     private String description;
 
@@ -29,10 +30,20 @@ public class Product {
 
     private String imageUrl;
 
+    private Integer price;
+
     @OneToMany(mappedBy = "product")
     private List<WishList> wishList = new ArrayList<>();
 
     @OneToMany(mappedBy = "product")
     private List<Auction> auctions = new ArrayList<>();
 
+    public Product(Member member, String name, String brand, String description, Integer price, String imageUrl) {
+        this.member = member;
+        this.name = name;
+        this.brand = brand;
+        this.description = description;
+        this.price = price;
+        this.imageUrl = imageUrl;
+    }
 }
