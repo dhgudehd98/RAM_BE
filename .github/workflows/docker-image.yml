@@ -4,7 +4,7 @@ on:
   # PR이 develop에 merge 되었을 때만 실행
   pull_request_target:
     branches:
-      - develop
+      - main
     types:
       - closed
 
