@@ -8,7 +8,7 @@ import static jakarta.persistence.FetchType.LAZY;
 public class Notification {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "notification_id")
     private Long id;
 

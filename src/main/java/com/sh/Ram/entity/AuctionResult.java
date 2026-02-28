@@ -10,7 +10,7 @@ import static jakarta.persistence.FetchType.LAZY;
 public class AuctionResult {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "result_id")
     private Long id;
 

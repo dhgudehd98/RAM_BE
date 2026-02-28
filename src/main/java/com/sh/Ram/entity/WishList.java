@@ -11,7 +11,7 @@ import static jakarta.persistence.FetchType.LAZY;
 public class WishList {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "wishList_id")
     private Long id;
 
