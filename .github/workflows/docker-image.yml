@@ -22,7 +22,6 @@ jobs:
         run: |
           chmod +x ./gradlew
           ./gradlew clean build -x test
-        working-directory: ./Ram
 
       - name: Docker build & publish to docker repo
         run: |
@@ -31,7 +30,6 @@ jobs:
           
           docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ vars.APP_NAME }}:latest .
           docker push ${{ secrets.DOCKER_USERNAME }}/${{ vars.APP_NAME }}:latest
-        working-directory: ./Ram
 
   deploy:
     needs: build
