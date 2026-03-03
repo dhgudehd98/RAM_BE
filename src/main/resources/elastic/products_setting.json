@@ -1,0 +1,33 @@
+{
+  "settings": {
+    "analysis": {
+      "filter": {
+        "products_synonym_filter": {
+          "type": "synonym",
+          "synonyms": [
+            "IAB STUDIO, 아이앱 스튜디오, 아이앱스튜디오, 아이앱 스투디오, 아이앱스투디오"
+          ]
+        }
+      },
+      "analyzer": {
+        "products_name_analyzer": {
+          "char_filter": [],
+          "tokenizer": "standard",
+          "filter": ["lowercase", "products_synonym_filter"]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "name": {
+        "type": "text",
+        "analyzer": "products_name_analyzer"
+      },
+      "brand": {
+        "type": "text",
+        "analyzer": "products_name_analyzer"
+      }
+    }
+  }
+}
