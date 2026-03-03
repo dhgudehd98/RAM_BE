@@ -20,6 +20,20 @@ public interface ProductDocumentRepository extends ElasticsearchRepository<Produ
      * @param keyword
      * @return
      */
-    @Query("{\"multi_match\": {\"query\": \"?0\", \"fields\": [\"name\", \"brand\"], \"fuzziness\": \"AUTO\"}}")
+//    @Query("{\"multi_match\": {\"query\": \"?0\", \"fields\": [\"name\", \"brand\"], \"fuzziness\": \"AUTO\"}}")
+
+    /**
+     * 검색어에 대한 부분이 브랜드와 일치하는 부분이 있으면 브랜드에 가중치 +
+     * 검색어가 (브랜드 + 상품명) 합해서 최소 2개는 매칭 되야 데이터 검색
+     *
+     */
+    @Query("{" +
+            "\"multi_match\": {" +
+            "\"query\": \"?0\"," +
+            "\"type\": \"cross_fields\"," +
+            "\"fields\": [\"brand^50\", \"name^1\"]," +
+            "\"minimum_should_match\": \"2\"" +
+            "}" +
+            "}")
     List<ProductDocument> searchByKeyword(String keyword);
 }
