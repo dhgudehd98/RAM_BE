@@ -26,13 +26,17 @@ public interface ProductDocumentRepository extends ElasticsearchRepository<Produ
      * 검색어에 대한 부분이 브랜드와 일치하는 부분이 있으면 브랜드에 가중치 +
      * 검색어가 (브랜드 + 상품명) 합해서 최소 2개는 매칭 되야 데이터 검색
      *
+     * minimum_should_match : 서로 다른 검색어 조건 중 몇 종류가 발견되었는가 ? 판별
+     *  검색어 : 스투시 -> 토큰 : [stussy , 스투시 , 스튜시], 스튜 , 시
+     *  brand : stussy에 대한 부분에서 하나의 토큰이 일치 -> [stussy , 스투시, 스튜시]
+     *  name : 여기에서는 [stussy , 스투시, 스튜시]를 제외하고 남은 검색어 조각 "스튜" , "시"에서 하나 더 일치해야함.
      */
     @Query("{" +
             "\"multi_match\": {" +
             "\"query\": \"?0\"," +
             "\"type\": \"cross_fields\"," +
             "\"fields\": [\"brand^50\", \"name^1\"]," +
-            "\"minimum_should_match\": \"2\"" +
+            "\"minimum_should_match\": \"2<1 3<2\"" + // A < B : 단어 개수가 A개를 초과하면 B개 만큼 맞추기 2개 초과하면 1개잇
             "}" +
             "}")
     List<ProductDocument> searchByKeyword(String keyword);
