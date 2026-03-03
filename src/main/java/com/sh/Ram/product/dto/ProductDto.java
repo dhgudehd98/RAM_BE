@@ -3,9 +3,14 @@ package com.sh.Ram.product.dto;
 import com.sh.Ram.entity.Product;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.checkerframework.checker.units.qual.N;
 
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
+@Setter
 public class ProductDto {
     private Long id;
     private String name;

@@ -1,5 +1,7 @@
 package com.sh.Ram.product.service;
 
+import com.sh.Ram.elasticSearch.product.document.ProductDocument;
+import com.sh.Ram.elasticSearch.product.repository.ProductDocumentRepository;
 import com.sh.Ram.entity.Product;
 import com.sh.Ram.product.dto.ProductDto;
 import com.sh.Ram.product.repository.ProductRepository;
@@ -11,12 +13,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final ProductDocumentRepository documentRepository;
     public Page<ProductDto> findAllProduct(String sort) {
 
         Pageable pageable;
@@ -30,6 +36,17 @@ public class ProductService {
 
         return productRepository.findAll(pageable)
                 .map(ProductDto::from);
+
+    }
+
+    public List<ProductDto> searchByKeyword(String keyword) {
+
+        return documentRepository.searchByKeyword(keyword).stream().map(document -> {
+            ProductDto dto = new ProductDto();
+            dto.setName(document.getName());
+            dto.setBrand(document.getBrand());
+            return dto;
+        }).collect(Collectors.toList());
 
     }
 }
