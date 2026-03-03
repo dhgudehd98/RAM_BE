@@ -10,7 +10,16 @@ import java.util.List;
 
 public interface ProductDocumentRepository extends ElasticsearchRepository<ProductDocument, String> {
 
-    // 입력한 값 => 상품 + 브랜드에 대한 부분으로 검색
+    /**
+     * keyword : 검색어
+     * -> 검색어와 상품 or 브랜드에 통합하여 일치하는 결과 값 출력
+     * -> fuzziness를 활용하여 오타에 대한 정확성 증가
+     *  * 검색어 : NIKI -> Nike로 정상적인 데이터 출력
+     *  * 검색어 : 아이얩 -> 데이터 출력 불가 , 출력이 안되는 이유는 ElasticSearch에서 오타어를 잡는 알고리즘에서 "앱" -> "얩"으로 변경해서 검색했지만
+     *  한국어로 검색했을 떄는 유니코드 값의 차이가 커서 fuzziness가 내부적으로 잡을 수 없음. 해결 방법으로는 동의어 추가 설정하기
+     * @param keyword
+     * @return
+     */
     @Query("{\"multi_match\": {\"query\": \"?0\", \"fields\": [\"name\", \"brand\"], \"fuzziness\": \"AUTO\"}}")
     List<ProductDocument> searchByKeyword(String keyword);
 }
