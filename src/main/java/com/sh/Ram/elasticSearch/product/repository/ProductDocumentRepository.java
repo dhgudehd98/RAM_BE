@@ -36,7 +36,7 @@ public interface ProductDocumentRepository extends ElasticsearchRepository<Produ
             "\"query\": \"?0\"," +
             "\"type\": \"cross_fields\"," +
             "\"fields\": [\"brand^50\", \"name^1\"]," +
-            "\"minimum_should_match\": \"2<1 3<2\"" + // A < B : 단어 개수가 A개를 초과하면 B개 만큼 맞추기 2개 초과하면 1개잇
+            "\"minimum_should_match\": \"70%\"" + // A < B : 단어 개수가 A개를 초과하면 B개 만큼 맞추기 2개 초과하면 1개잇
             "}" +
             "}")
     List<ProductDocument> searchByKeyword(String keyword);
