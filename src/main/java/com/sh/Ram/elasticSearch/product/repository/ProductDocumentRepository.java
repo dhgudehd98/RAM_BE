@@ -11,6 +11,6 @@ import java.util.List;
 public interface ProductDocumentRepository extends ElasticsearchRepository<ProductDocument, String> {
 
     // 입력한 값 => 상품 + 브랜드에 대한 부분으로 검색
-    @Query("{\"multi_match\": {\"query\": \"?0\", \"fields\": [\"name\", \"brand\"]}}")
-    List<ProductDocument> findByName(String keyword);
+    @Query("{\"multi_match\": {\"query\": \"?0\", \"fields\": [\"name\", \"brand\"], \"fuzziness\": \"AUTO\"}}")
+    List<ProductDocument> searchByKeyword(String keyword);
 }
