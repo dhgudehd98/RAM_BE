@@ -25,7 +25,7 @@ public class ProductDto {
         return new ProductDto(
                 product.getId(),
                 product.getName(),
-                product.getBrand(),
+                product.getBrand().getBrandName(),
                 product.getDescription(),
                 product.getPrice(),
                 product.getImageUrl()
