@@ -12,7 +12,8 @@ import static jakarta.persistence.FetchType.LAZY;
 @Entity
 public class Auction {
 
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "auction_id")
     private Long id;
 

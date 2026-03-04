@@ -10,7 +10,8 @@ import static jakarta.persistence.FetchType.LAZY;
 @Entity
 public class Member extends BaseEntity {
 
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String email;
@@ -26,7 +27,7 @@ public class Member extends BaseEntity {
     private boolean isAccount;
 
     @OneToOne(fetch = LAZY)
-    @JoinColumn(name = "account_id", nullable = false)
+    @JoinColumn(name = "account_id", nullable = true)
     private Account account;
 
     @OneToMany(mappedBy = "member")
