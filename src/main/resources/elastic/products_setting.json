@@ -1,25 +1,40 @@
 {
   "settings": {
     "analysis": {
+      "tokenizer": {
+        "nori_user_dict": {
+          "type": "nori_tokenizer",
+          "decompound_mode": "discard",
+          "user_dictionary_rules": ["아이앱", "스투시"]
+        }
+      },
       "filter": {
         "products_synonym_filter": {
-          "type": "synonym",
+          "type": "synonym_graph",
           "synonyms": [
-            "IAB STUDIO, 아이앱 스튜디오, 아이앱스튜디오, 아이앱 스투디오, 아이앱스투디오"
+            "iab, 아이앱",
+            "studio, 스튜디오, 스투디오",
+            "stussy, 스투시, 스튜시"
           ]
         }
       },
       "analyzer": {
         "products_name_analyzer": {
-          "char_filter": [],
-          "tokenizer": "standard",
-          "filter": ["lowercase", "products_synonym_filter"]
+          "type": "custom",
+          "tokenizer": "nori_user_dict",
+          "filter": [
+            "lowercase",
+            "nori_readingform",
+            "products_synonym_filter"
+          ]
         }
       }
     }
   },
   "mappings": {
     "properties": {
+      "id": { "type": "keyword" },
+      "memberId": { "type": "long" },
       "name": {
         "type": "text",
         "analyzer": "products_name_analyzer"
@@ -27,7 +42,9 @@
       "brand": {
         "type": "text",
         "analyzer": "products_name_analyzer"
-      }
+      },
+      "price": { "type": "integer" },
+      "imageUrl": { "type": "keyword", "index": false }
     }
   }
 }
