@@ -3,7 +3,9 @@ package com.sh.Ram.entity;
 import com.sh.Ram.enums.Category;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +13,8 @@ import java.util.List;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class Product {
@@ -25,7 +29,10 @@ public class Product {
     private Member member;
 
     private String name;
-    private String brand;
+
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name="brand_id")
+    private Brand brand;
 
     private String description;
 
@@ -42,7 +49,7 @@ public class Product {
     @OneToMany(mappedBy = "product")
     private List<Auction> auctions = new ArrayList<>();
 
-    public Product(Member member, String name, String brand, String description, Integer price, String imageUrl) {
+    public Product(Member member, String name, Brand brand, String description, Integer price, String imageUrl) {
         this.member = member;
         this.name = name;
         this.brand = brand;
@@ -50,4 +57,14 @@ public class Product {
         this.price = price;
         this.imageUrl = imageUrl;
     }
+
+    public Product(Member member, String name, String description, Integer price, String imageUrl) {
+        this.member = member;
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.imageUrl = imageUrl;
+    }
+
+
 }

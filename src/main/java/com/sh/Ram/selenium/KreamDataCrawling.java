@@ -24,15 +24,15 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class KreamDataCrawling  {  // ← 변경
+public class KreamDataCrawling  {
 
     private final MemberRepository memberRepository;
     private final ProductRepository productRepository;
 
 
-    @Bean
+//    @Bean
     @Transactional
-    public void run(ApplicationArguments args) throws Exception {  // ← 변경
+    public void run() throws Exception {
         ChromeOptions options = new ChromeOptions();
         WebDriver driver = new ChromeDriver(options);
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
@@ -113,7 +113,7 @@ public class KreamDataCrawling  {  // ← 변경
                     }
 
                     String description = "후드티입니다 기모입니다.";
-                    Product product = new Product(member, name, brand, description, priceInt, imageUrl);
+                    Product product = new Product(member, name, description, priceInt, imageUrl);
                     productRepository.save(product);
 
                     System.out.println("저장완료 - 브랜드 : " + brand + " 상품명 : " + name + " 가격 : " + priceInt);
