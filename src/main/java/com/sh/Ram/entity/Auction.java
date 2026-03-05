@@ -2,6 +2,8 @@ package com.sh.Ram.entity;
 
 import com.sh.Ram.enums.AuctionStatus;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -9,6 +11,8 @@ import java.util.List;
 
 import static jakarta.persistence.FetchType.LAZY;
 
+@Setter
+@Getter
 @Entity
 public class Auction {
 
@@ -41,4 +45,16 @@ public class Auction {
 
     @OneToMany(mappedBy = "auction")
     private List<Bid> bids = new ArrayList<>();
+
+    public void startAuction() {
+        if (this.auctionStatus == AuctionStatus.PENDING) {
+            this.auctionStatus = AuctionStatus.PROGRESS;
+        }
+    }
+
+    public void endAuction() {
+        if (this.auctionStatus == AuctionStatus.PROGRESS) {
+            this.auctionStatus = AuctionStatus.CLOSED;
+        }
+    }
 }
