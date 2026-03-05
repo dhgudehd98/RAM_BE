@@ -243,6 +243,101 @@
             color: var(--muted);
             letter-spacing: 0.01em;
         }
+
+        .ranking-wrapper {
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .ranking-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .ranking-header .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ff4d4d;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .ranking-header span {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: 0.05em;
+        }
+
+        .ranking-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background 0.12s;
+        }
+
+        .ranking-item:nth-child(odd) {
+            border-right: 1px solid var(--border);
+        }
+
+        .ranking-item:nth-last-child(-n+2) {
+            border-bottom: none;
+        }
+
+        .ranking-item:hover {
+            background: rgba(108, 99, 255, 0.08);
+        }
+
+        .rank-num {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--accent);
+            width: 20px;
+            flex-shrink: 0;
+        }
+
+        .rank-name {
+            flex: 1;
+            font-size: 0.9rem;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .rank-new {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #ff4d4d;
+            flex-shrink: 0;
+        }
+
+        .rank-dash {
+            font-size: 0.75rem;
+            color: var(--muted);
+            flex-shrink: 0;
+        }
     </style>
 </head>
 <body>
@@ -266,6 +361,14 @@
     </div>
 
     <p class="hint">↑↓ 방향키로 이동 &nbsp;·&nbsp; Enter로 선택 &nbsp;·&nbsp; Esc로 닫기</p>
+
+    <div class="ranking-wrapper">
+        <div class="ranking-header">
+            <div class="dot"></div>
+            <span>실시간 검색어</span>
+        </div>
+        <ul class="ranking-list" id="rankingList"></ul>
+    </div>
 </div>
 
 <script>
@@ -367,6 +470,36 @@
         if (!q) return;
         window.location.href = '/search/result?q=' + encodeURIComponent(q);
     }
+
+    // 실시간 검색어 랭킹
+    async function loadRanking() {
+        try {
+            const res = await fetch('/search/ranking');
+            const data = await res.json(); // [{brandName: "스투시", rankNew: "New"}, ...]
+
+            const rankingList = document.getElementById('rankingList');
+            rankingList.innerHTML = data.map((item, i) => `
+                <li class="ranking-item" onclick="searchByRanking('${item.brandName}')">
+                    <span class="rank-num">${i + 1}</span>
+                    <span class="rank-name">${item.brandName}</span>
+                    ${item.rankNew === 'New'
+                ? `<span class="rank-new">NEW</span>`
+                : `<span class="rank-dash">-</span>`
+            }
+                </li>
+            `).join('');
+        } catch (e) {
+            console.error('랭킹 오류:', e);
+        }
+    }
+
+    function searchByRanking(keyword) {
+        input.value = keyword;
+        doSearch();
+    }
+
+    loadRanking();
+    setInterval(loadRanking, 60000); // 1분마다 갱신
 </script>
 </body>
 </html>
