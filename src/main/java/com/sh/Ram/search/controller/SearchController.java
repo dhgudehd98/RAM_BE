@@ -45,4 +45,9 @@ public class SearchController {
         return searchService.autoCompletion(prefix);
     }
 
+    @GetMapping("")
+    public String main() {
+        return "search/main";
+    }
+
 }

@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0a0a0f;
+            --surface: #13131a;
+            --border: #1e1e2e;
+            --accent: #6c63ff;
+            --accent-glow: rgba(108, 99, 255, 0.3);
+            --text: #e8e8f0;
+            --muted: #5a5a7a;
+            --highlight: #a89cff;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                    linear-gradient(var(--border) 1px, transparent 1px),
+                    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 60px 60px;
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(108,99,255,0.12) 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 48px;
+            width: 100%;
+            max-width: 680px;
+            padding: 0 24px;
+            animation: fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            letter-spacing: -0.04em;
+            background: linear-gradient(135deg, #fff 30%, var(--highlight));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            user-select: none;
+        }
+
+        .logo span {
+            color: var(--accent);
+            -webkit-text-fill-color: var(--accent);
+        }
+
+        .search-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 6px 6px 6px 20px;
+            gap: 12px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--accent-glow), 0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        .search-icon {
+            flex-shrink: 0;
+            color: var(--muted);
+            transition: color 0.2s;
+        }
+
+        .search-box:focus-within .search-icon { color: var(--accent); }
+
+        #searchInput {
+            flex: 1;
+            background: none;
+            border: none;
+            outline: none;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 400;
+            color: var(--text);
+            caret-color: var(--accent);
+            padding: 10px 0;
+        }
+
+        #searchInput::placeholder { color: var(--muted); }
+
+        .search-btn {
+            flex-shrink: 0;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 24px;
+            font-family: 'Syne', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+        }
+
+        .search-btn:hover {
+            background: var(--highlight);
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+
+        .search-btn:active { transform: scale(0.97); }
+
+        .autocomplete-list {
+            position: absolute;
+            top: calc(100% + 10px);
+            left: 0; right: 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+            z-index: 100;
+            display: none;
+            animation: dropIn 0.18s cubic-bezier(0.16,1,0.3,1) both;
+        }
+
+        .autocomplete-list.open { display: block; }
+
+        @keyframes dropIn {
+            from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .autocomplete-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background 0.12s;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .autocomplete-item:last-child { border-bottom: none; }
+
+        .autocomplete-item:hover,
+        .autocomplete-item.active {
+            background: rgba(108, 99, 255, 0.12);
+        }
+
+        .brand-image {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: var(--border);
+            flex-shrink: 0;
+        }
+
+        .brand-image-placeholder {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: var(--border);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .autocomplete-item .item-text {
+            flex: 1;
+            font-size: 0.95rem;
+            color: var(--text);
+        }
+
+        .autocomplete-item .item-text em {
+            font-style: normal;
+            color: var(--highlight);
+            font-weight: 600;
+        }
+
+        .item-label {
+            font-size: 0.75rem;
+            color: var(--muted);
+            background: var(--border);
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        .hint {
+            font-size: 0.8rem;
+            color: var(--muted);
+            letter-spacing: 0.01em;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="logo">search<span>.</span></div>
+
+    <div class="search-wrapper">
+        <div class="search-box">
+            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+
+            <input type="text" id="searchInput" placeholder="무엇이든 검색해보세요..." autocomplete="off" />
+
+            <button class="search-btn" onclick="doSearch()">검색</button>
+        </div>
+
+        <ul class="autocomplete-list" id="autocompleteList"></ul>
+    </div>
+
+    <p class="hint">↑↓ 방향키로 이동 &nbsp;·&nbsp; Enter로 선택 &nbsp;·&nbsp; Esc로 닫기</p>
+</div>
+
+<script>
+    const input = document.getElementById('searchInput');
+    const list  = document.getElementById('autocompleteList');
+    let activeIndex = -1;
+    let currentSuggestions = [];
+    let debounceTimer;
+
+    async function renderSuggestions(query) {
+        const q = query.trim();
+        if (!q) { closeList(); return; }
+
+        try {
+            const res = await fetch('/search/autoCompletion?prefix=' + encodeURIComponent(q));
+            currentSuggestions = await res.json(); // BrandDocument 리스트 [{name: "...", imageUrl: "..."}, ...]
+
+            if (!currentSuggestions.length) { closeList(); return; }
+
+            list.innerHTML = currentSuggestions.map((item, i) => {
+                const highlighted = item.name.replace(
+                    new RegExp(`(${escapeReg(q)})`, 'gi'),
+                    '<em>$1</em>'
+                );
+
+                const imageEl = item.imageUrl
+                    ? `<img class="brand-image" src="${item.imageUrl}" alt="${item.name}" onerror="this.style.display='none'">`
+                    : `<div class="brand-image-placeholder">${item.name.charAt(0).toUpperCase()}</div>`;
+
+                return `
+                <li class="autocomplete-item" data-index="${i}" onmousedown="selectItem(${i})">
+                    ${imageEl}
+                    <span class="item-text">${highlighted}</span>
+                    <span class="item-label">브랜드</span>
+                </li>`;
+            }).join('');
+
+            activeIndex = -1;
+            list.classList.add('open');
+        } catch (e) {
+            console.error('자동완성 오류:', e);
+            closeList();
+        }
+    }
+
+    function closeList() {
+        list.classList.remove('open');
+        list.innerHTML = '';
+        activeIndex = -1;
+    }
+
+    function selectItem(index) {
+        if (currentSuggestions[index]) {
+            input.value = currentSuggestions[index].name; // name 필드 사용
+            closeList();
+            doSearch();
+        }
+    }
+
+    function setActive(index) {
+        const items = list.querySelectorAll('.autocomplete-item');
+        items.forEach(el => el.classList.remove('active'));
+        if (index >= 0 && index < items.length) {
+            items[index].classList.add('active');
+            activeIndex = index;
+        }
+    }
+
+    function escapeReg(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+    // debounce 적용
+    input.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => renderSuggestions(input.value), 300);
+    });
+
+    input.addEventListener('keydown', e => {
+        const items = list.querySelectorAll('.autocomplete-item');
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setActive(Math.min(activeIndex + 1, items.length - 1));
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setActive(Math.max(activeIndex - 1, 0));
+        } else if (e.key === 'Enter') {
+            if (activeIndex >= 0) { selectItem(activeIndex); }
+            else { doSearch(); }
+        } else if (e.key === 'Escape') {
+            closeList();
+        }
+    });
+
+    document.addEventListener('click', e => {
+        if (!e.target.closest('.search-wrapper')) closeList();
+    });
+
+    function doSearch() {
+        const q = input.value.trim();
+        if (!q) return;
+        window.location.href = '/search/result?q=' + encodeURIComponent(q);
+    }
+</script>
+</body>
+</html>
