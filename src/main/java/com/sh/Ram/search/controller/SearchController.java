@@ -2,6 +2,7 @@ package com.sh.Ram.search.controller;
 
 import com.sh.Ram.elasticSearch.brand.document.BrandDocument;
 import com.sh.Ram.product.dto.ProductDto;
+import com.sh.Ram.ranking.dto.RankingDto;
 import com.sh.Ram.search.service.SearchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +44,13 @@ public class SearchController {
     @ResponseBody
     public List<BrandDocument> autoCompletion(@RequestParam(required = false) String prefix) throws IOException {
         return searchService.autoCompletion(prefix);
+    }
+
+    @GetMapping("/ranking")
+    @ResponseBody
+    public List<RankingDto> getKeywordRanking() {
+
+       return searchService.getKeywordRanking();
     }
 
     @GetMapping("")
