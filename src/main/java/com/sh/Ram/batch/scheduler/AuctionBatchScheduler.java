@@ -17,8 +17,8 @@ import java.util.Properties;
 public class AuctionBatchScheduler {
 
     private final JobLauncher jobLauncher;
-    private final Job auctionStartJob;
-    private final Job auctionEndJob;
+    private final Job auctionStartBulkJob;
+    private final Job auctionEndBulkJob;
 
     /**
      * 경매 시작 배치
@@ -28,13 +28,13 @@ public class AuctionBatchScheduler {
     public void runAuctionStartBatch() throws Exception {
 
         JobParameters params = new JobParametersBuilder()
-                .addString("job", "auctionStart")
+                .addString("job", "auctionStartBulk")
                 .addLong("time", System.currentTimeMillis())
                 .toJobParameters();
 
-        log.info("Auction Start Batch 실행");
+        log.info("Auction Start Bulk Batch 실행");
 
-        jobLauncher.run(auctionStartJob, params);
+        jobLauncher.run(auctionStartBulkJob, params);
     }
 
     /**
@@ -45,12 +45,12 @@ public class AuctionBatchScheduler {
     public void runAuctionEndBatch() throws Exception {
 
         JobParameters params = new JobParametersBuilder()
-                .addString("job", "auctionEnd")
+                .addString("job", "auctionEndBulk")
                 .addLong("time", System.currentTimeMillis())
                 .toJobParameters();
 
-        log.info("Auciton End Batch 실행");
+        log.info("Auction End Bulk Batch 실행");
 
-        jobLauncher.run(auctionEndJob, params);
+        jobLauncher.run(auctionEndBulkJob, params);
     }
 }
