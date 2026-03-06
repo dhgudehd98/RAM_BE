@@ -9,6 +9,8 @@ import com.sh.Ram.elasticSearch.product.document.ProductDocument;
 import com.sh.Ram.elasticSearch.product.repository.ProductDocumentRepository;
 import com.sh.Ram.product.dto.ProductDto;
 import com.sh.Ram.product.repository.ProductRepository;
+import com.sh.Ram.ranking.dto.RankingDto;
+import com.sh.Ram.redis.searchRanking.RedisRealTimeSearchRanking;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.client.RequestOptions;
@@ -29,24 +31,15 @@ import java.util.stream.Collectors;
 public class SearchService {
     private final ProductRepository productRepository;
     private final ProductDocumentRepository productDocumentRepository;
+    private final RedisRealTimeSearchRanking redisRanking;
 
     private final ElasticsearchClient elasticsearchClient;
-    public Page<ProductDto> findAllProduct(String sort) {
 
-        Pageable pageable;
-
-        // 정렬 조건에 따라서 Paging 분류 방법 다르게
-        if (sort != null) pageable = PageRequest.of(0, 10, Sort.by(sort).descending());
-        else {
-            pageable = PageRequest.of(0, 10, Sort.by("name").descending());
-        }
-
-        return productRepository.findAll(pageable)
-                .map(ProductDto::from);
-
-    }
 
     public List<ProductDto> searchByKeyword(String keyword) {
+
+        //Redis에 keyword 저장
+        redisRanking.setKeyword(keyword);
 
         return productDocumentRepository.searchByKeyword(keyword).stream().map(document -> {
             ProductDto dto = new ProductDto();
@@ -57,9 +50,8 @@ public class SearchService {
 
     }
 
+    // 검색어 자동완성 기능 -> 브랜드 별로 자동완성하고 , 상품으로는 자동완성하지 않음
     public List<BrandDocument> autoCompletion(String prefix) throws IOException {
-
-
         /**
          * 자동 완성 요청 형식
          * "suggest": {
@@ -98,5 +90,10 @@ public class SearchService {
                 .flatMap(s -> s.completion().options().stream())
                 .map(option -> option.source())
                 .collect(Collectors.toList());
+    }
+
+
+    public List<RankingDto> getKeywordRanking() {
+        return redisRanking.getKeywordRanking();
     }
 }
