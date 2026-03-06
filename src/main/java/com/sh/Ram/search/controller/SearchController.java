@@ -24,15 +24,6 @@ public class SearchController {
 
     private final SearchService searchService;
 
-    // 모든 상품 조회 -> 메인 페이지로 생각
-    @GetMapping("/productsAll")
-    @ResponseBody
-    public Page<ProductDto> findAllProduct(
-            @RequestParam(required = false) String sort
-    ) {
-        return searchService.findAllProduct(sort);
-    }
-
     // 상품 / 브랜드 검색
     @GetMapping("/products")
     @ResponseBody

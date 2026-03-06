@@ -34,20 +34,7 @@ public class SearchService {
     private final RedisRealTimeSearchRanking redisRanking;
 
     private final ElasticsearchClient elasticsearchClient;
-    public Page<ProductDto> findAllProduct(String sort) {
 
-        Pageable pageable;
-
-        // 정렬 조건에 따라서 Paging 분류 방법 다르게
-        if (sort != null) pageable = PageRequest.of(0, 10, Sort.by(sort).descending());
-        else {
-            pageable = PageRequest.of(0, 10, Sort.by("name").descending());
-        }
-
-        return productRepository.findAll(pageable)
-                .map(ProductDto::from);
-
-    }
 
     public List<ProductDto> searchByKeyword(String keyword) {
 
