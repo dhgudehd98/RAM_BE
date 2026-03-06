@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>경매 목록</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #f7f7f5;
+            --surface: #ffffff;
+            --border: #e8e8e4;
+            --accent: #111111;
+            --accent2: #ff3b30;
+            --text: #111111;
+            --muted: #999990;
+            --tag-bg: #f0f0ec;
+            --pending: #f59e0b;
+            --progress: #10b981;
+            --closed: #6b7280;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+        }
+
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(247, 247, 245, 0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+
+        .nav-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.6rem;
+            letter-spacing: 0.08em;
+            color: var(--text);
+            text-decoration: none;
+        }
+
+        .nav-logo span { color: var(--accent2); }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 9px 18px;
+            color: var(--muted);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .nav-link:hover { border-color: var(--accent); color: var(--text); }
+
+        main {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 52px 48px;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            margin-bottom: 28px;
+            padding-bottom: 24px;
+            border-bottom: 2px solid var(--accent);
+            animation: fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(2.5rem, 4vw, 3.5rem);
+            letter-spacing: 0.06em;
+            color: var(--text);
+            line-height: 1;
+        }
+
+        .page-title span { color: var(--accent2); }
+
+        /* 탭 */
+        .tab-wrapper {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 32px;
+            animation: fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) both;
+        }
+
+        .tab-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 8px 20px;
+            color: var(--muted);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-decoration: none;
+        }
+
+        .tab-btn:hover { border-color: var(--accent); color: var(--text); }
+        .tab-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+        .tab-btn .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .tab-btn.pending-tab .dot { background: var(--pending); }
+        .tab-btn.progress-tab .dot { background: var(--progress); }
+        .tab-btn.closed-tab .dot { background: var(--closed); }
+        .tab-btn.active .dot { background: #fff; }
+
+        /* 그리드 */
+        .auction-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 24px;
+        }
+
+        .auction-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            text-decoration: none;
+            display: block;
+            animation: fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) both;
+        }
+
+        .auction-card:nth-child(1) { animation-delay: 0.04s; }
+        .auction-card:nth-child(2) { animation-delay: 0.08s; }
+        .auction-card:nth-child(3) { animation-delay: 0.12s; }
+        .auction-card:nth-child(4) { animation-delay: 0.16s; }
+        .auction-card:nth-child(5) { animation-delay: 0.20s; }
+        .auction-card:nth-child(6) { animation-delay: 0.24s; }
+
+        .auction-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 36px rgba(0,0,0,0.09);
+            border-color: #ccc;
+        }
+
+        .card-image-wrap {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: var(--tag-bg);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .card-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .auction-card:hover .card-image { transform: scale(1.04); }
+
+        .card-image-placeholder { font-size: 2.5rem; color: var(--muted); }
+
+        /* 상태 배지 */
+        .status-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+
+        .status-badge.pending  { background: rgba(245,158,11,0.15);  color: var(--pending); }
+        .status-badge.progress  { background: rgba(16,185,129,0.15);   color: var(--progress); }
+        .status-badge.closed   { background: rgba(107,114,128,0.15);  color: var(--closed); }
+
+        .card-body {
+            padding: 16px 18px 18px;
+            border-top: 1px solid var(--border);
+        }
+
+        .card-brand {
+            font-size: 0.72rem;
+            color: var(--accent2);
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .card-name {
+            font-size: 0.95rem;
+            color: var(--text);
+            font-weight: 500;
+            margin-bottom: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-price-row {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+
+        .card-price-label {
+            font-size: 0.72rem;
+            color: var(--muted);
+            letter-spacing: 0.03em;
+        }
+
+        .card-price {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.2rem;
+            letter-spacing: 0.04em;
+            color: var(--text);
+        }
+
+        .card-date-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .card-date {
+            font-size: 0.78rem;
+            color: var(--muted);
+        }
+
+        .card-arrow {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: var(--tag-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            transition: background 0.2s, color 0.2s;
+            flex-shrink: 0;
+        }
+
+        .auction-card:hover .card-arrow { background: var(--accent); color: #fff; }
+
+        /* 빈 상태 */
+        .empty {
+            text-align: center;
+            padding: 100px 0;
+            color: var(--muted);
+        }
+
+        .empty-icon { font-size: 3rem; margin-bottom: 16px; }
+        .empty p { font-size: 0.95rem; }
+
+        /* 페이지네이션 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            margin-top: 56px;
+        }
+
+        .page-btn {
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--muted);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-decoration: none;
+        }
+
+        .page-btn:hover { border-color: var(--accent); color: var(--text); }
+        .page-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="/" class="nav-logo">MARKET<span>.</span></a>
+    <div class="nav-right">
+        <a href="/product/list" class="nav-link">전체 상품</a>
+        <a href="/search" class="nav-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none"
+                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            검색하기
+        </a>
+    </div>
+</nav>
+
+<main>
+    <div class="page-header">
+        <h1 class="page-title">LIVE<span>.</span><br>AUCTION</h1>
+    </div>
+
+    <!-- 탭 -->
+    <div class="tab-wrapper">
+        <a th:href="@{/auction/list}" th:classappend="${status == null} ? ' active'" class="tab-btn">
+            <span class="dot"></span> 전체
+        </a>
+        <a th:href="@{/auction/list(status='pending')}" th:classappend="${status == 'pending'} ? ' active'" class="tab-btn pending-tab">
+            <span class="dot"></span> 경매 예정
+        </a>
+        <a th:href="@{/auction/list(status='progress')}" th:classappend="${status == 'progress'} ? ' active'" class="tab-btn progress-tab">
+            <span class="dot"></span> 경매 진행중
+        </a>
+        <a th:href="@{/auction/list(status='closed')}" th:classappend="${status == 'closed'} ? ' active'" class="tab-btn closed-tab">
+            <span class="dot"></span> 경매 마감
+        </a>
+    </div>
+
+    <!-- 경매 목록 -->
+    <div class="auction-grid" th:if="${not #lists.isEmpty(auctions.content)}">
+        <a th:each="auction : ${auctions.content}"
+           th:href="@{/auction/{id}(id=${auction.id})}"
+           class="auction-card">
+            <div class="card-image-wrap">
+                <img th:if="${auction.imgURL != null}"
+                     th:src="${auction.imgURL}"
+                     th:alt="${auction.name}"
+                     class="card-image"
+                     referrerpolicy="no-referrer"
+                     onerror="this.style.display='none'">
+                <div th:unless="${auction.imgURL != null}" class="card-image-placeholder">📦</div>
+
+                <!-- 상태 배지 -->
+                <span th:if="${auction.auctionStatus.name() == 'PENDING'}"  class="status-badge pending">경매 예정</span>
+                <span th:if="${auction.auctionStatus.name() == 'PROGRESS'}"  class="status-badge progress">진행중</span>
+                <span th:if="${auction.auctionStatus.name() == 'CLOSED'}"   class="status-badge closed">마감</span>
+            </div>
+            <div class="card-body">
+                <div class="card-brand" th:text="${auction.brandName}"></div>
+                <div class="card-name"  th:text="${auction.name}"></div>
+                <div class="card-price-row">
+                    <span class="card-price-label"
+                          th:text="${auction.auctionStatus.name() == 'PENDING'} ? '시작가' : '현재가'"></span>
+                    <span class="card-price"
+                          th:text="${#numbers.formatInteger(
+                              auction.auctionStatus.name() == 'PENDING' ? auction.startPrice : auction.currentPrice,
+                              3, 'COMMA') + '원'}"></span>
+                </div>
+                <div class="card-date-row">
+                    <span class="card-date"
+                          th:text="${auction.auctionStatus.name() == 'PENDING'}
+                              ? '시작: ' + ${#temporals.format(auction.startDate, 'MM.dd')}
+                              : '마감: ' + ${#temporals.format(auction.endDate, 'MM.dd')}"></span>
+                    <div class="card-arrow">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- 빈 상태 -->
+    <div class="empty" th:if="${#lists.isEmpty(auctions.content)}">
+        <div class="empty-icon">🔨</div>
+        <p>등록된 경매가 없어요</p>
+    </div>
+
+    <!-- 페이지네이션 -->
+    <div class="pagination" th:if="${auctions.totalPages > 1}">
+        <a th:href="@{/auction/list(tab=${tab}, page=0)}" class="page-btn">«</a>
+        <a th:each="i : ${#numbers.sequence(
+                T(java.lang.Math).max(0, auctions.number - 2),
+                T(java.lang.Math).min(auctions.totalPages - 1, auctions.number + 2))}"
+           th:href="@{/auction/list(tab=${tab}, page=${i})}"
+           th:text="${i + 1}"
+           th:classappend="${auctions.number == i} ? ' active'"
+           class="page-btn"></a>
+        <a th:href="@{/auction/list(tab=${tab}, page=${auctions.totalPages - 1})}" class="page-btn">»</a>
+    </div>
+</main>
+
+</body>
+</html>
