@@ -1,0 +1,31 @@
+package com.sh.Ram.common.exception;
+
+import com.sh.Ram.common.exception.member.MemberException;
+import com.sh.Ram.common.exception.product.ProductException;
+import jakarta.security.auth.message.AuthException;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ProductException.class)
+    public ResponseEntity<Map<String, String>> handleProduct(ProductException e) {
+        Map<String, String> res = new HashMap<>();
+        res.put("result", "N");
+        res.put("message", e.getMessage());
+        return ResponseEntity.badRequest().body(res);
+    }
+
+    @ExceptionHandler(MemberException.class)
+    public ResponseEntity<Map<String, String>> handleMember(ProductException e) {
+        Map<String, String> res = new HashMap<>();
+        res.put("result", "N");
+        res.put("message", e.getMessage());
+        return ResponseEntity.badRequest().body(res);
+    }
+}
