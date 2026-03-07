@@ -24,9 +24,6 @@ public class AuctionService {
         Pageable pageable = PageRequest.of(page, 10, Sort.by("startDate").descending());
         Page<Auction> auctionList ;
 
-        log.info("=========Status Check ==========");
-        log.info("Status : " + status);
-        log.info("=========Status Check End ==========");
         // status에 대한 부분이 없으면 전체 조회
         if (status == null) {
             auctionList = auctionRepository.findAllWithProduct(pageable);

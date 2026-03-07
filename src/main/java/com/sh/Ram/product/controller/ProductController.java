@@ -31,11 +31,7 @@ public class ProductController {
             Model model
     ) {
         Page<ProductDto> products = productService.findAllProduct(sort, page);
-        List<ProductDto> content = products.getContent();
 
-        for (ProductDto dto : content) {
-            System.out.println("imgURL : " + dto.getImageUrl());
-        }
         model.addAttribute("products", products);
         model.addAttribute("sort", sort);
         return "product/list";
