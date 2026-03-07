@@ -420,15 +420,15 @@
 
     <!-- 페이지네이션 -->
     <div class="pagination" th:if="${auctions.totalPages > 1}">
-        <a th:href="@{/auction/list(tab=${tab}, page=0)}" class="page-btn">«</a>
+        <a th:href="${status != null} ? @{/auction/list(status=${status}, page=0)} : @{/auction/list(page=0)}" class="page-btn">«</a>
         <a th:each="i : ${#numbers.sequence(
-                T(java.lang.Math).max(0, auctions.number - 2),
-                T(java.lang.Math).min(auctions.totalPages - 1, auctions.number + 2))}"
-           th:href="@{/auction/list(tab=${tab}, page=${i})}"
+        T(java.lang.Math).max(0, T(java.lang.Math).min(auctions.number - 2, auctions.totalPages - 5)),
+        T(java.lang.Math).min(auctions.totalPages - 1, T(java.lang.Math).max(auctions.number + 2, 4)))}"
+           th:href="${status != null} ? @{/auction/list(status=${status}, page=${i})} : @{/auction/list(page=${i})}"
            th:text="${i + 1}"
            th:classappend="${auctions.number == i} ? ' active'"
            class="page-btn"></a>
-        <a th:href="@{/auction/list(tab=${tab}, page=${auctions.totalPages - 1})}" class="page-btn">»</a>
+        <a th:href="${status != null} ? @{/auction/list(status=${status}, page=${auctions.totalPages - 1})} : @{/auction/list(page=${auctions.totalPages - 1})}" class="page-btn">»</a>
     </div>
 </main>
 
