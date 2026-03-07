@@ -3,6 +3,7 @@ package com.sh.Ram.entity;
 import com.sh.Ram.enums.AuctionStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
@@ -14,6 +15,7 @@ import static jakarta.persistence.FetchType.LAZY;
 @Setter
 @Getter
 @Entity
+@NoArgsConstructor
 public class Auction {
 
     @Id
@@ -56,5 +58,13 @@ public class Auction {
         if (this.auctionStatus == AuctionStatus.PROGRESS) {
             this.auctionStatus = AuctionStatus.CLOSED;
         }
+    }
+
+    public Auction(Product product, Integer startPrice,LocalDate startDate, LocalDate endDate, AuctionStatus auctionStatus) {
+        this.product = product;
+        this.startPrice = startPrice;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.auctionStatus = auctionStatus;
     }
 }

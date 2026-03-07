@@ -1,6 +1,7 @@
 package com.sh.Ram.product.controller;
 
 import com.sh.Ram.product.dto.ProductDto;
+import com.sh.Ram.product.dto.RegisterProductDto;
 import com.sh.Ram.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,12 +11,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
@@ -24,6 +24,7 @@ import java.util.List;
 public class ProductController {
 
     private final ProductService productService;
+
     @GetMapping("/list")
     public String findAllProduct(
             @RequestParam(required = false) String sort,
@@ -35,5 +36,16 @@ public class ProductController {
         model.addAttribute("products", products);
         model.addAttribute("sort", sort);
         return "product/list";
+    }
+
+    @PostMapping("/regist")
+    @ResponseBody
+    public Map<String,String> regist(
+            @RequestPart("data") RegisterProductDto registerProductDto,
+            @RequestPart("image") MultipartFile image
+    ) {
+        //! 나중에 멤버 아이디 값으로 변경
+        Long memberId = 1L;
+        return productService.regist(registerProductDto, image, memberId);
     }
 }
