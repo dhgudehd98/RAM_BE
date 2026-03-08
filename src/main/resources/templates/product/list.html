@@ -270,6 +270,255 @@
         .page-btn:hover { border-color: var(--accent); color: var(--text); }
         .page-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
+        /* 등록 버튼 */
+        .register-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .register-btn:hover { background: #333; }
+
+        /* 모달 오버레이 */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.2s ease both;
+        }
+
+        .modal-overlay.open { display: flex; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+
+        /* 모달 */
+        .modal {
+            background: var(--surface);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 560px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 36px;
+            position: relative;
+            animation: slideUp 0.25s cubic-bezier(0.16,1,0.3,1) both;
+            scrollbar-width: none;
+        }
+
+        .modal::-webkit-scrollbar { display: none; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+        }
+
+        .modal-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.8rem;
+            letter-spacing: 0.06em;
+            color: var(--text);
+        }
+
+        .modal-title span { color: var(--accent2); }
+
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--tag-bg);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            transition: all 0.15s;
+        }
+
+        .modal-close:hover { background: var(--border); color: var(--text); }
+
+        /* 이미지 업로드 */
+        .image-upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 14px;
+            padding: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .image-upload-area:hover { border-color: var(--accent); background: var(--tag-bg); }
+        .image-upload-area.dragover { border-color: var(--accent); background: var(--tag-bg); }
+
+        .image-upload-area input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-icon { font-size: 2rem; margin-bottom: 8px; }
+
+        .upload-text {
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+
+        .upload-text strong { color: var(--text); }
+
+        .image-preview {
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            display: none;
+        }
+
+        /* 폼 */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group.full { grid-column: 1 / -1; }
+
+        .form-label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 11px 14px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.9rem;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.15s;
+            width: 100%;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            border-color: var(--accent);
+        }
+
+        .form-textarea { resize: none; height: 90px; }
+
+        /* 경매 체크 */
+        .auction-check-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px;
+            background: var(--tag-bg);
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .auction-check-row input[type="checkbox"] { display: none; }
+
+        .custom-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+
+        .auction-check-row input:checked ~ .custom-checkbox {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .auction-check-row input:checked ~ .custom-checkbox::after {
+            content: '✓';
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .auction-check-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        /* 경매 날짜 */
+        .auction-date-group {
+            display: none;
+            grid-column: 1 / -1;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            padding: 16px;
+            background: var(--tag-bg);
+            border-radius: 10px;
+            margin-top: 4px;
+        }
+
+        .auction-date-group.show { display: grid; }
+
+        /* 등록 버튼 */
+        .modal-submit {
+            width: 100%;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.1rem;
+            letter-spacing: 0.08em;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 24px;
+        }
+
+        .modal-submit:hover { background: #333; }
+
         .tab-wrapper {
             display: flex;
             gap: 6px;
@@ -298,14 +547,117 @@
 
 <nav>
     <a href="/" class="nav-logo">MARKET<span>.</span></a>
-    <a href="/search" class="nav-search">
-        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none"
-             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-        </svg>
-        검색하기
-    </a>
+    <div style="display:flex; gap:12px; align-items:center;">
+        <button class="register-btn" onclick="openModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none"
+                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+            </svg>
+            상품 등록
+        </button>
+        <a href="/search" class="nav-search">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none"
+                 viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            검색하기
+        </a>
+    </div>
 </nav>
+
+<!-- 상품 등록 모달 -->
+<div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 class="modal-title">상품 등록<span>.</span></h2>
+            <button class="modal-close" onclick="closeModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- 이미지 업로드 -->
+        <div class="image-upload-area" id="uploadArea">
+            <input type="file" accept="image/*" id="imageInput" onchange="previewImage(event)">
+            <img class="image-preview" id="imagePreview" alt="미리보기">
+            <div id="uploadPlaceholder">
+                <div class="upload-icon">🖼️</div>
+                <p class="upload-text"><strong>클릭하거나 드래그</strong>해서 이미지 업로드</p>
+                <p class="upload-text" style="font-size:0.78rem; margin-top:4px;">JPG, PNG, WEBP 지원</p>
+            </div>
+        </div>
+
+        <!-- 입력 폼 -->
+        <div class="form-grid">
+            <div class="form-group full">
+                <label class="auction-check-row" onclick="toggleAuction()">
+                    <input type="checkbox" id="writeAI">
+                    <div class="custom-checkbox" id="writeAiCheck"></div>
+                    <span class="auction-check-label">🔨 AI로 작성하기</span>
+                </label>
+            </div>
+
+            <div class="form-group full">
+                <label class="form-label">상품명</label>
+                <input type="text" class="form-input" id="productName" placeholder="상품명을 입력하세요">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">브랜드</label>
+                <input type="text" class="form-input" id="brandName" placeholder="브랜드명">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">카테고리</label>
+                <select class="form-select" id="category">
+                    <option value="">카테고리 선택</option>
+                    <option value="SHOES">신발</option>
+                    <option value="TOPS">상의</option>
+                    <option value="BOTTOMS">하의</option>
+                    <option value="OUTER">아우터</option>
+                    <option value="ACCESSORIES">악세서리</option>
+                    <option value="BAG">가방</option>
+                    <option value="ETC">기타</option>
+                </select>
+            </div>
+
+            <div class="form-group full">
+                <label class="form-label">설명</label>
+                <textarea class="form-textarea" id="description" placeholder="상품 설명을 입력하세요"></textarea>
+            </div>
+
+            <div class="form-group full">
+                <label class="form-label">가격 (원)</label>
+                <input type="number" class="form-input" id="price" placeholder="0">
+            </div>
+
+            <!-- 경매 체크 -->
+            <div class="form-group full">
+                <label class="auction-check-row" onclick="toggleAuction()">
+                    <input type="checkbox" id="auctionCheck">
+                    <div class="custom-checkbox" id="customCheckbox"></div>
+                    <span class="auction-check-label">🔨 경매로 등록하기</span>
+                </label>
+            </div>
+
+            <!-- 경매 날짜 (체크 시 표시) -->
+            <div class="auction-date-group" id="auctionDateGroup">
+                <div class="form-group">
+                    <label class="form-label">경매 시작일</label>
+                    <input type="date" class="form-input" id="startDate">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">경매 마감일</label>
+                    <input type="date" class="form-input" id="endDate">
+                </div>
+            </div>
+        </div>
+
+        <button class="modal-submit" onclick="submitProduct()">등록하기</button>
+    </div>
+</div>
 
 <main>
     <div class="page-header">
@@ -333,7 +685,6 @@
                      th:src="${product.imageUrl}"
                      th:alt="${product.name}"
                      class="card-image"
-                     referrerpolicy="no-referrer"
                      onerror="this.style.display='none'">
                 <div th:unless="${product.imageUrl != null}" class="card-image-placeholder">📦</div>
             </div>
@@ -360,19 +711,115 @@
 
     <div class="pagination" th:if="${products.totalPages > 1}">
         <a th:href="@{/product/list(sort=${sort}, page=0)}" class="page-btn">«</a>
-
         <a th:each="i : ${#numbers.sequence(
-            T(java.lang.Math).max(0, products.number - 2),
-            T(java.lang.Math).min(products.totalPages - 1, products.number + 2))}"
+            T(java.lang.Math).max(0, T(java.lang.Math).min(products.number - 2, products.totalPages - 5)),
+            T(java.lang.Math).min(products.totalPages - 1, T(java.lang.Math).max(products.number + 2, 4)))}"
            th:href="@{/product/list(sort=${sort}, page=${i})}"
            th:text="${i + 1}"
            th:classappend="${products.number == i} ? ' active'"
            class="page-btn"></a>
-
         <a th:href="@{/product/list(sort=${sort}, page=${products.totalPages - 1})}" class="page-btn">»</a>
     </div>
-
 </main>
 
 </body>
+<script>
+    function openModal() {
+        document.getElementById('modalOverlay').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        document.getElementById('modalOverlay').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    function handleOverlayClick(e) {
+        if (e.target === document.getElementById('modalOverlay')) closeModal();
+    }
+
+    function previewImage(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const preview = document.getElementById('imagePreview');
+            const placeholder = document.getElementById('uploadPlaceholder');
+            preview.src = ev.target.result;
+            preview.style.display = 'block';
+            placeholder.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function toggleAuction() {
+        const checkbox = document.getElementById('auctionCheck');
+        const customCheckbox = document.getElementById('customCheckbox');
+        const dateGroup = document.getElementById('auctionDateGroup');
+        checkbox.checked = !checkbox.checked;
+        if (checkbox.checked) {
+            customCheckbox.style.background = 'var(--accent)';
+            customCheckbox.style.borderColor = 'var(--accent)';
+            customCheckbox.innerHTML = '<span style="color:#fff;font-size:0.75rem;font-weight:700;">✓</span>';
+            dateGroup.classList.add('show');
+        } else {
+            customCheckbox.style.background = '';
+            customCheckbox.style.borderColor = '';
+            customCheckbox.innerHTML = '';
+            dateGroup.classList.remove('show');
+        }
+    }
+
+    async function submitProduct() {
+        const formData = new FormData();
+
+        // 이미지 파일
+        const imageFile = document.getElementById('imageInput').files[0];
+        if (imageFile) formData.append('image', imageFile);
+
+        // 상품 데이터
+        const data = {
+            productName: document.getElementById('productName').value,
+            brandName: document.getElementById('brandName').value,
+            category: document.getElementById('category').value,
+            description: document.getElementById('description').value,
+            price: document.getElementById('price').value,
+            isAuction: document.getElementById('auctionCheck').checked,
+            auctionStartDate: document.getElementById('startDate').value || null,
+            auctionEndDate: document.getElementById('endDate').value || null
+        };
+
+        formData.append('data', new Blob([JSON.stringify(data)], { type: 'application/json' }));
+
+        const res = await fetch('/product/regist', {
+            method: 'POST',
+            body: formData
+        });
+
+        const response = await res.json();
+
+        if (response.result === 'Y') {
+            alert(response.message);
+            closeModal();
+            location.reload();
+        }
+        else{
+            alert(response.message);
+        }
+    }
+
+    // 드래그 앤 드롭
+    const uploadArea = document.getElementById('uploadArea');
+    uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+            document.getElementById('imageInput').files = e.dataTransfer.files;
+            previewImage({ target: { files: [file] } });
+        }
+    });
+</script>
 </html>

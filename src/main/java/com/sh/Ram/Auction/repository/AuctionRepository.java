@@ -29,12 +29,12 @@ public interface AuctionRepository extends JpaRepository<Auction, Long> {
     """)
     int bulkEndAuction();
 
-    @Query(value = "SELECT a FROM Auction a JOIN FETCH a.product",
+    @Query(value = "SELECT a FROM Auction a JOIN FETCH a.product p JOIN FETCH p.brand",
             countQuery = "SELECT count(a) FROM Auction a")
     Page<Auction> findAllWithProduct(Pageable pageable);
 
     // 상품별 조회
-    @Query(value = "SELECT a FROM Auction a JOIN FETCH a.product where a.auctionStatus = :status",
-            countQuery = "SELECT  count(a) FROM Auction a where a.auctionStatus = :status")
+    @Query(value = "SELECT a FROM Auction a JOIN FETCH a.product p JOIN FETCH p.brand WHERE a.auctionStatus = :status",
+            countQuery = "SELECT count(a) FROM Auction a WHERE a.auctionStatus = :status")
     Page<Auction> findAuctionByStatus(Pageable pageable, @Param("status") AuctionStatus auctionStatus);
 }
