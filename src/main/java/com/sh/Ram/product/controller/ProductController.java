@@ -1,5 +1,6 @@
 package com.sh.Ram.product.controller;
 
+import com.sh.Ram.product.dto.AiProductDto;
 import com.sh.Ram.product.dto.ProductDto;
 import com.sh.Ram.product.dto.RegisterProductDto;
 import com.sh.Ram.product.service.ProductService;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
@@ -47,5 +49,18 @@ public class ProductController {
         //! 나중에 멤버 아이디 값으로 변경
         Long memberId = 1L;
         return productService.regist(registerProductDto, image, memberId);
+    }
+
+    @PostMapping("/ai")
+    @ResponseBody
+    public AiProductDto getProductInfo(
+            @RequestPart("image") MultipartFile image
+    ) {
+        log.info("여기 지금 안들어오나 ? ");
+        AiProductDto block = productService.getProductInfo(image).block();
+        log.info("=== 상품 정보 ===");
+        log.info(block.toString());
+
+        return productService.getProductInfo(image).block();
     }
 }

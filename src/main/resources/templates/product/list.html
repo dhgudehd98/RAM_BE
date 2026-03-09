@@ -593,9 +593,9 @@
         <div class="form-grid">
             <div class="form-group full">
                 <label class="auction-check-row" onclick="toggleAuction()">
-                    <input type="checkbox" id="writeAI">
+                    <input type="checkbox" id="aiAnalysis">
                     <div class="custom-checkbox" id="writeAiCheck"></div>
-                    <span class="auction-check-label">🔨 AI로 작성하기</span>
+                    <span class="auction-check-label">AI로 작성하기</span>
                 </label>
             </div>
 
@@ -741,6 +741,8 @@
     function previewImage(e) {
         const file = e.target.files[0];
         if (!file) return;
+
+        // 기존 미리보기 코드
         const reader = new FileReader();
         reader.onload = (ev) => {
             const preview = document.getElementById('imagePreview');
@@ -750,6 +752,24 @@
             placeholder.style.display = 'none';
         };
         reader.readAsDataURL(file);
+
+        // AI 체크박스 체크 시 자동 분석 요청
+        const isAiChecked = document.getElementById('aiAnalysis').checked;
+        if (isAiChecked) {
+            const formData = new FormData();
+            formData.append('image', file);
+
+            fetch('/product/ai', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('productName').value = data.productName;
+                    document.getElementById('brandName').value = data.brandName;
+                    document.getElementById('description').value = data.description;
+                });
+        }
     }
 
     function toggleAuction() {
