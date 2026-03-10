@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,10 +26,16 @@ public class SearchController {
     private final SearchService searchService;
 
     // 상품 / 브랜드 검색
-    @GetMapping("/products")
-    @ResponseBody
-    public List<ProductDto> searchByKeyword(@RequestParam(required = false) String keyword){
-        return searchService.searchByKeyword(keyword);
+    @GetMapping("/result")
+    public String searchByKeyword(
+            @RequestParam(required = false) String keyword,
+            Model model)
+    {
+        List<ProductDto> products = searchService.searchByKeyword(keyword);
+
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("products", products);
+        return "search/result";
     }
 
     @GetMapping("/autoCompletion")

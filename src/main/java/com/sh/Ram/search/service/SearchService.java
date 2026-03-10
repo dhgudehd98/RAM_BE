@@ -42,10 +42,8 @@ public class SearchService {
         redisRanking.setKeyword(keyword);
 
         return productDocumentRepository.searchByKeyword(keyword).stream().map(document -> {
-            ProductDto dto = new ProductDto();
-            dto.setName(document.getName());
-            dto.setBrand(document.getBrand());
-            return dto;
+            ProductDto productDto = new ProductDto(document);
+            return productDto;
         }).collect(Collectors.toList());
 
     }

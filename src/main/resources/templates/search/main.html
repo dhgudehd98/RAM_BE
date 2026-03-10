@@ -4,96 +4,107 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Search</title>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --bg: #0a0a0f;
-            --surface: #13131a;
-            --border: #1e1e2e;
-            --accent: #6c63ff;
-            --accent-glow: rgba(108, 99, 255, 0.3);
-            --text: #e8e8f0;
-            --muted: #5a5a7a;
-            --highlight: #a89cff;
+            --bg: #f7f7f5;
+            --surface: #ffffff;
+            --border: #e8e8e4;
+            --accent: #111111;
+            --accent2: #ff3b30;
+            --text: #111111;
+            --muted: #999990;
+            --tag-bg: #f0f0ec;
         }
 
         body {
             background: var(--bg);
             color: var(--text);
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Outfit', sans-serif;
             min-height: 100vh;
+        }
+
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(247, 247, 245, 0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+
+        .nav-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.6rem;
+            letter-spacing: 0.08em;
+            color: var(--text);
+            text-decoration: none;
+        }
+
+        .nav-logo span { color: var(--accent2); }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 9px 18px;
+            color: var(--muted);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .nav-link:hover { border-color: var(--accent); color: var(--text); }
+
+        main {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 64px 24px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image:
-                    linear-gradient(var(--border) 1px, transparent 1px),
-                    linear-gradient(90deg, var(--border) 1px, transparent 1px);
-            background-size: 60px 60px;
-            opacity: 0.4;
-            pointer-events: none;
-        }
-
-        body::after {
-            content: '';
-            position: fixed;
-            width: 600px;
-            height: 600px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(108,99,255,0.12) 0%, transparent 70%);
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-        }
-
-        .container {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 48px;
-            width: 100%;
-            max-width: 680px;
-            padding: 0 24px;
-            animation: fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) both;
+            gap: 200px;
         }
 
         @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(24px); }
+            from { opacity: 0; transform: translateY(12px); }
             to   { opacity: 1; transform: translateY(0); }
         }
 
-        .logo {
-            font-family: 'Syne', sans-serif;
-            font-weight: 800;
+        .search-title {
+            font-family: 'Bebas Neue', sans-serif;
             font-size: clamp(2.5rem, 6vw, 4rem);
-            letter-spacing: -0.04em;
-            background: linear-gradient(135deg, #fff 30%, var(--highlight));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            user-select: none;
+            letter-spacing: 0.06em;
+            color: var(--text);
+            text-align: center;
+            animation: fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) both;
         }
 
-        .logo span {
-            color: var(--accent);
-            -webkit-text-fill-color: var(--accent);
-        }
+        .search-title span { color: var(--accent2); }
 
+        /* 검색창 */
         .search-wrapper {
             position: relative;
             width: 100%;
+            animation: fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) 0.05s both;
         }
 
         .search-box {
@@ -101,7 +112,7 @@
             align-items: center;
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 16px;
+            border-radius: 14px;
             padding: 6px 6px 6px 20px;
             gap: 12px;
             transition: border-color 0.2s, box-shadow 0.2s;
@@ -109,7 +120,7 @@
 
         .search-box:focus-within {
             border-color: var(--accent);
-            box-shadow: 0 0 0 4px var(--accent-glow), 0 8px 32px rgba(0,0,0,0.4);
+            box-shadow: 0 0 0 3px rgba(17,17,17,0.06), 0 8px 24px rgba(0,0,0,0.06);
         }
 
         .search-icon {
@@ -125,8 +136,8 @@
             background: none;
             border: none;
             outline: none;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 1.05rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
             font-weight: 400;
             color: var(--text);
             caret-color: var(--accent);
@@ -142,73 +153,65 @@
             border: none;
             border-radius: 10px;
             padding: 12px 24px;
-            font-family: 'Syne', sans-serif;
-            font-size: 0.9rem;
-            font-weight: 600;
-            letter-spacing: 0.02em;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1rem;
+            letter-spacing: 0.06em;
             cursor: pointer;
-            transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+            transition: background 0.2s, transform 0.1s;
         }
 
-        .search-btn:hover {
-            background: var(--highlight);
-            box-shadow: 0 4px 20px var(--accent-glow);
-        }
-
+        .search-btn:hover { background: #333; }
         .search-btn:active { transform: scale(0.97); }
 
+        /* 자동완성 */
         .autocomplete-list {
             position: absolute;
-            top: calc(100% + 10px);
+            top: calc(100% + 8px);
             left: 0; right: 0;
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 14px;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+            box-shadow: 0 12px 36px rgba(0,0,0,0.08);
             z-index: 100;
             display: none;
-            animation: dropIn 0.18s cubic-bezier(0.16,1,0.3,1) both;
+            animation: dropIn 0.15s cubic-bezier(0.16,1,0.3,1) both;
         }
 
         .autocomplete-list.open { display: block; }
 
         @keyframes dropIn {
-            from { opacity: 0; transform: translateY(-6px) scale(0.98); }
-            to   { opacity: 1; transform: translateY(0) scale(1); }
+            from { opacity: 0; transform: translateY(-4px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
         .autocomplete-item {
             display: flex;
             align-items: center;
-            gap: 14px;
-            padding: 12px 20px;
+            gap: 12px;
+            padding: 12px 18px;
             cursor: pointer;
-            transition: background 0.12s;
+            transition: background 0.1s;
             border-bottom: 1px solid var(--border);
         }
 
         .autocomplete-item:last-child { border-bottom: none; }
-
-        .autocomplete-item:hover,
-        .autocomplete-item.active {
-            background: rgba(108, 99, 255, 0.12);
-        }
+        .autocomplete-item:hover, .autocomplete-item.active { background: var(--tag-bg); }
 
         .brand-image {
-            width: 36px;
-            height: 36px;
+            width: 34px;
+            height: 34px;
             border-radius: 8px;
             object-fit: cover;
-            background: var(--border);
+            background: var(--tag-bg);
             flex-shrink: 0;
         }
 
         .brand-image-placeholder {
-            width: 36px;
-            height: 36px;
+            width: 34px;
+            height: 34px;
             border-radius: 8px;
-            background: var(--border);
+            background: var(--tag-bg);
             flex-shrink: 0;
             display: flex;
             align-items: center;
@@ -220,51 +223,51 @@
 
         .autocomplete-item .item-text {
             flex: 1;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             color: var(--text);
         }
 
         .autocomplete-item .item-text em {
             font-style: normal;
-            color: var(--highlight);
+            color: var(--accent2);
             font-weight: 600;
         }
 
         .item-label {
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             color: var(--muted);
-            background: var(--border);
+            background: var(--tag-bg);
             padding: 3px 8px;
             border-radius: 6px;
         }
 
         .hint {
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: var(--muted);
             letter-spacing: 0.01em;
+            animation: fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) 0.1s both;
         }
 
+        /* 인기 검색어 */
         .ranking-wrapper {
+            position: relative;
+            z-index: 1;
             width: 100%;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            overflow: hidden;
+            animation: fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) 0.15s both;
         }
 
         .ranking-header {
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border);
+            padding: 0 4px 14px;
         }
 
         .ranking-header .dot {
-            width: 8px;
-            height: 8px;
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
-            background: #ff4d4d;
+            background: var(--accent2);
             animation: pulse 1.5s infinite;
         }
 
@@ -274,52 +277,44 @@
         }
 
         .ranking-header span {
-            font-family: 'Syne', sans-serif;
-            font-size: 0.85rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
             font-weight: 600;
             color: var(--text);
-            letter-spacing: 0.05em;
         }
 
         .ranking-list {
             display: grid;
             grid-template-columns: 1fr 1fr;
+            grid-auto-flow: column;
+            grid-template-rows: repeat(5, auto);
+            gap: 8px;
         }
 
         .ranking-item {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 12px 20px;
-            border-bottom: 1px solid var(--border);
+            padding: 12px 16px;
+            background: var(--tag-bg);
+            border-radius: 10px;
             cursor: pointer;
-            transition: background 0.12s;
+            transition: background 0.15s;
         }
 
-        .ranking-item:nth-child(odd) {
-            border-right: 1px solid var(--border);
-        }
-
-        .ranking-item:nth-last-child(-n+2) {
-            border-bottom: none;
-        }
-
-        .ranking-item:hover {
-            background: rgba(108, 99, 255, 0.08);
-        }
+        .ranking-item:hover { background: var(--border); }
 
         .rank-num {
-            font-family: 'Syne', sans-serif;
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: var(--accent);
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1rem;
+            color: var(--text);
             width: 20px;
             flex-shrink: 0;
         }
 
         .rank-name {
             flex: 1;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             color: var(--text);
             white-space: nowrap;
             overflow: hidden;
@@ -327,9 +322,9 @@
         }
 
         .rank-new {
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             font-weight: 700;
-            color: #ff4d4d;
+            color: var(--accent2);
             flex-shrink: 0;
         }
 
@@ -342,34 +337,35 @@
 </head>
 <body>
 
-<div class="container">
-    <div class="logo">search<span>.</span></div>
+<nav>
+    <a href="/" class="nav-logo">MARKET<span>.</span></a>
+    <div class="nav-right">
+        <a href="/product/list" class="nav-link">전체 상품</a>
+        <a href="/auction/list" class="nav-link">경매</a>
+    </div>
+</nav>
 
+<main>
     <div class="search-wrapper">
         <div class="search-box">
-            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
                  fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
             </svg>
-
-            <input type="text" id="searchInput" placeholder="무엇이든 검색해보세요..." autocomplete="off" />
-
+            <input type="text" id="searchInput" placeholder="상품명 / 브랜드명 검색" autocomplete="off" />
             <button class="search-btn" onclick="doSearch()">검색</button>
         </div>
-
         <ul class="autocomplete-list" id="autocompleteList"></ul>
     </div>
-
-    <p class="hint">↑↓ 방향키로 이동 &nbsp;·&nbsp; Enter로 선택 &nbsp;·&nbsp; Esc로 닫기</p>
 
     <div class="ranking-wrapper">
         <div class="ranking-header">
             <div class="dot"></div>
-            <span>실시간 검색어</span>
+            <span>인기 검색어</span>
         </div>
         <ul class="ranking-list" id="rankingList"></ul>
     </div>
-</div>
+</main>
 
 <script>
     const input = document.getElementById('searchInput');
@@ -384,7 +380,7 @@
 
         try {
             const res = await fetch('/search/autoCompletion?prefix=' + encodeURIComponent(q));
-            currentSuggestions = await res.json(); // BrandDocument 리스트 [{name: "...", imageUrl: "..."}, ...]
+            currentSuggestions = await res.json();
 
             if (!currentSuggestions.length) { closeList(); return; }
 
@@ -422,7 +418,7 @@
 
     function selectItem(index) {
         if (currentSuggestions[index]) {
-            input.value = currentSuggestions[index].name; // name 필드 사용
+            input.value = currentSuggestions[index].name;
             closeList();
             doSearch();
         }
@@ -439,7 +435,6 @@
 
     function escapeReg(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
-    // debounce 적용
     input.addEventListener('input', () => {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => renderSuggestions(input.value), 300);
@@ -468,14 +463,13 @@
     function doSearch() {
         const q = input.value.trim();
         if (!q) return;
-        window.location.href = '/search/result?q=' + encodeURIComponent(q);
+        window.location.href = '/search/result?keyword=' + encodeURIComponent(q);
     }
 
-    // 실시간 검색어 랭킹
     async function loadRanking() {
         try {
             const res = await fetch('/search/ranking');
-            const data = await res.json(); // [{brandName: "스투시", rankNew: "New"}, ...]
+            const data = await res.json();
 
             const rankingList = document.getElementById('rankingList');
             rankingList.innerHTML = data.map((item, i) => `
@@ -499,7 +493,7 @@
     }
 
     loadRanking();
-    setInterval(loadRanking, 60000); // 1분마다 갱신
+    setInterval(loadRanking, 60000);
 </script>
 </body>
 </html>

@@ -1,5 +1,6 @@
 package com.sh.Ram.product.dto;
 
+import com.sh.Ram.elasticSearch.product.document.ProductDocument;
 import com.sh.Ram.entity.Product;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -31,5 +32,25 @@ public class ProductDto {
                 product.getImageUrl()
 //                product.getCategory()
         );
+    }
+
+    public ProductDto(ProductDocument document) {
+        this.id = Long.parseLong(document.getId());
+        this.name = document.getName();
+        this.brand = document.getBrand();
+        this.price = document.getPrice();
+        this.imageUrl = document.getImageUrl();
+    }
+
+    @Override
+    public String toString() {
+        return "ProductDto{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", brand='" + brand + '\'' +
+                ", description='" + description + '\'' +
+                ", price=" + price +
+                ", imageUrl='" + imageUrl + '\'' +
+                '}';
     }
 }
