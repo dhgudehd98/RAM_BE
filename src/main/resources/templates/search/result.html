@@ -251,6 +251,21 @@
             margin-bottom: 8px;
         }
         .empty p { font-size: 0.95rem; }
+
+        .status-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+
+        .status-badge.pending  { background: rgba(245,158,11,0.15);  color: #f59e0b; }
+        .status-badge.progress { background: rgba(16,185,129,0.15);  color: #10b981; }
+        .status-badge.closed   { background: rgba(107,114,128,0.15); color: #6b7280; }
     </style>
 </head>
 <body>
@@ -300,10 +315,20 @@
                      referrerpolicy="no-referrer"
                      onerror="this.style.display='none'">
                 <div th:unless="${product.imageUrl != null}" class="card-image-placeholder">📦</div>
+
+                <span th:if="${product.auctionStatus != null and product.auctionStatus.toString() == 'PROGRESS'}" class="status-badge progress">경매 진행중</span>
+                <span th:if="${product.auctionStatus != null and product.auctionStatus.toString() == 'PENDING'}" class="status-badge pending">경매 예정</span>
+                <span th:if="${product.auctionStatus != null and product.auctionStatus.toString() == 'CLOSED'}" class="status-badge closed">경매 마감</span>
             </div>
             <div class="card-body">
                 <div class="card-brand" th:text="${product.brand}"></div>
                 <div class="card-name" th:text="${product.name}"></div>
+
+<!--                <span th:if="${product.auctionStatus != null}"-->
+<!--                      th:text="${product.auctionStatus.toString() == 'PROGRESS' ? '경매중' : (product.auctionStatus.toString() == 'PENDING' ? '경매예정' : '경매마감')}"-->
+<!--                      class="auction-badge">-->
+<!--                </span>-->
+
                 <div class="card-footer">
                     <span class="card-price" th:text="${#numbers.formatInteger(product.price, 3, 'COMMA') + '원'}"></span>
                     <div class="card-arrow">

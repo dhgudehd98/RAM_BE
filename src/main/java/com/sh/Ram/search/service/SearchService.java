@@ -3,10 +3,13 @@ package com.sh.Ram.search.service;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
+import com.sh.Ram.Auction.repository.AuctionRepository;
+import com.sh.Ram.Auction.service.AuctionService;
 import com.sh.Ram.elasticSearch.brand.document.BrandDocument;
 import com.sh.Ram.elasticSearch.brand.repository.BrandDocumentRepository;
 import com.sh.Ram.elasticSearch.product.document.ProductDocument;
 import com.sh.Ram.elasticSearch.product.repository.ProductDocumentRepository;
+import com.sh.Ram.enums.AuctionStatus;
 import com.sh.Ram.product.dto.ProductDto;
 import com.sh.Ram.product.repository.ProductRepository;
 import com.sh.Ram.ranking.dto.RankingDto;
@@ -23,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,6 +36,7 @@ public class SearchService {
     private final ProductRepository productRepository;
     private final ProductDocumentRepository productDocumentRepository;
     private final RedisRealTimeSearchRanking redisRanking;
+    private final AuctionRepository auctionRepository;
 
     private final ElasticsearchClient elasticsearchClient;
 
@@ -41,10 +46,27 @@ public class SearchService {
         //Redis에 keyword 저장
         redisRanking.setKeyword(keyword);
 
-        return productDocumentRepository.searchByKeyword(keyword).stream().map(document -> {
-            ProductDto productDto = new ProductDto(document);
-            return productDto;
-        }).collect(Collectors.toList());
+        List<ProductDocument> documents = productDocumentRepository.searchByKeyword(keyword);
+        List<Long> productIds = documents.stream()
+                .map(document -> Long.parseLong(document.getId()))
+                .collect(Collectors.toList());
+
+        Map<Long, AuctionStatus> auctionMap = auctionRepository
+                .findAuctionStatusByProductIdIn(productIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (AuctionStatus) row[1]
+                ));
+
+        return documents
+                .stream()
+                .map(document -> {
+                    ProductDto productDto = new ProductDto(document);
+                    productDto.setAuctionStatus(auctionMap.get(Long.parseLong(document.getId())));
+                    return productDto;
+                })
+                .collect(Collectors.toList());
 
     }
 

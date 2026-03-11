@@ -9,6 +9,9 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+import java.util.Optional;
+
 public interface AuctionRepository extends JpaRepository<Auction, Long> {
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
@@ -37,4 +40,8 @@ public interface AuctionRepository extends JpaRepository<Auction, Long> {
     @Query(value = "SELECT a FROM Auction a JOIN FETCH a.product p JOIN FETCH p.brand WHERE a.auctionStatus = :status",
             countQuery = "SELECT count(a) FROM Auction a WHERE a.auctionStatus = :status")
     Page<Auction> findAuctionByStatus(Pageable pageable, @Param("status") AuctionStatus auctionStatus);
+
+    // 상품중에 경매에 등록된 상품인지 확인하는 쿼리
+    @Query("SELECT a.product.id, a.auctionStatus FROM Auction a WHERE a.product.id IN :productIds")
+    List<Object[]> findAuctionStatusByProductIdIn(@Param("productIds") List<Long> productIds);
 }
