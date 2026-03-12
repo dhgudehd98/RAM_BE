@@ -54,6 +54,14 @@ public class ProductDto {
         this.imageUrl = document.getImageUrl();
     }
 
+    public ProductDto(Product product) {
+        this.id = product.getId();
+        this.name = product.getName();
+        this.brand = product.getBrand().getBrandName();
+        this.price = product.getPrice();
+        this.imageUrl = product.getImageUrl();
+    }
+
     @Override
     public String toString() {
         return "ProductDto{" +
