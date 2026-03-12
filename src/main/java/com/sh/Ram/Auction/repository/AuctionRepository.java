@@ -2,9 +2,11 @@ package com.sh.Ram.Auction.repository;
 
 import com.sh.Ram.entity.Auction;
 import com.sh.Ram.enums.AuctionStatus;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -44,4 +46,16 @@ public interface AuctionRepository extends JpaRepository<Auction, Long> {
     // 상품중에 경매에 등록된 상품인지 확인하는 쿼리
     @Query("SELECT a.product.id, a.auctionStatus FROM Auction a WHERE a.product.id IN :productIds")
     List<Object[]> findAuctionStatusByProductIdIn(@Param("productIds") List<Long> productIds);
+
+    /**
+     * 입찰 시 동시성 제어용
+     * SELECT ... FOR UPDATE
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        select a
+        from Auction a
+        where a.id = :auctionId
+    """)
+    Optional<Auction> findByAuctionWithLock(@Param("auctionId") Long auctionId);
 }
