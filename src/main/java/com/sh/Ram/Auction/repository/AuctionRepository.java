@@ -47,15 +47,23 @@ public interface AuctionRepository extends JpaRepository<Auction, Long> {
     @Query("SELECT a.product.id, a.auctionStatus FROM Auction a WHERE a.product.id IN :productIds")
     List<Object[]> findAuctionStatusByProductIdIn(@Param("productIds") List<Long> productIds);
 
+    // 경매 상태(PENDING, PROGRESS) 존재 시 재경매 OR 경매 등록 불가 쿼리
+    @Query("""
+            SELECT count(a) > 0
+            FROM Auction a
+            WHERE a.product.id = :productId
+            AND a.auctionStatus <> :status
+    """)
+    boolean existsActiveAuctionByProductId(
+            @Param("productId") Long productId,
+            @Param("status") AuctionStatus status
+    );
+
     /**
      * 입찰 시 동시성 제어용
      * SELECT ... FOR UPDATE
      */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("""
-        select a
-        from Auction a
-        where a.id = :auctionId
-    """)
+    @Query("SELECT a FROM Auction a WHERE a.id = :auctionId ")
     Optional<Auction> findByAuctionWithLock(@Param("auctionId") Long auctionId);
 }
