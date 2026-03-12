@@ -27,8 +27,6 @@ public class SaveElasticSearch  {
         List<Product> products = repository.findAll();
 
         for (Product product : products) {
-            log.info("=== 상품 정보 ====");
-            log.info(product.toString());
             Long memberId = 1L;
             ProductDocument document = new ProductDocument(
                     String.valueOf(product.getId()),

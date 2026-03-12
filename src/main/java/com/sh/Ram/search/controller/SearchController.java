@@ -38,6 +38,18 @@ public class SearchController {
         return "search/result";
     }
 
+//    @GetMapping("/result")
+    public String searchByKeywordByDB(
+            @RequestParam String keyword,
+            Model model
+    ){
+        List<ProductDto> products = searchService.searchByKeywordByDB(keyword);
+
+
+        model.addAttribute("products", products);
+        return "search/result";
+    }
+
     @GetMapping("/autoCompletion")
     @ResponseBody
     public List<BrandDocument> autoCompletion(@RequestParam(required = false) String prefix) throws IOException {
