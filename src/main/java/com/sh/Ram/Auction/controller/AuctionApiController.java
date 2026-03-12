@@ -14,7 +14,7 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping("/api/auction")
+@RequestMapping("/api/auctions")
 public class AuctionApiController {
 
     private final AuctionService auctionService;
