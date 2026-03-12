@@ -16,6 +16,11 @@ import static jakarta.persistence.FetchType.LAZY;
 @Getter
 @Entity
 @NoArgsConstructor
+@Table(
+        indexes = {
+                @Index(name = "idx_auction_product_status", columnList = "product_id, auction_status")
+        }
+)
 public class Auction {
 
     @Id
