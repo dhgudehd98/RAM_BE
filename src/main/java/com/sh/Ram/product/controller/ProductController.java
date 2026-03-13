@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -45,7 +46,7 @@ public class ProductController {
     public Map<String,String> regist(
             @RequestPart("data") RegisterProductDto registerProductDto,
             @RequestPart("image") MultipartFile image
-    ) {
+    ) throws IOException {
         //! 나중에 멤버 아이디 값으로 변경
         Long memberId = 1L;
         return productService.regist(registerProductDto, image, memberId);
@@ -56,7 +57,6 @@ public class ProductController {
     public AiProductDto getProductInfo(
             @RequestPart("image") MultipartFile image
     ) {
-        log.info("여기 지금 안들어오나 ? ");
         AiProductDto block = productService.getProductInfo(image).block();
         log.info("=== 상품 정보 ===");
         log.info(block.toString());
