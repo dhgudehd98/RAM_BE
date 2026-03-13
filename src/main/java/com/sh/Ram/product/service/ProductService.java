@@ -2,6 +2,7 @@ package com.sh.Ram.product.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sh.Ram.Auction.repository.AuctionRepository;
+import com.sh.Ram.aws.service.S3Service;
 import com.sh.Ram.common.exception.member.MemberException;
 import com.sh.Ram.entity.Auction;
 import com.sh.Ram.entity.Brand;
@@ -15,6 +16,7 @@ import com.sh.Ram.product.dto.ProductDto;
 import com.sh.Ram.product.dto.RegisterProductDto;
 import com.sh.Ram.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,17 +30,20 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProductService {
 
     private final ProductRepository productRepository;
     private final MemberRepository memberRepository;
     private final AuctionRepository auctionRepository;
     private final WebClient webClient;
+    private final S3Service s3service;
 
     public Page<ProductDto> findAllProduct(String sort, int page) {
 
@@ -58,11 +63,11 @@ public class ProductService {
     }
 
     @Transactional
-    public Map<String, String> regist(RegisterProductDto registerProductDto, MultipartFile image, Long memberId) {
+    public Map<String, String> regist(RegisterProductDto registerProductDto, MultipartFile image, Long memberId) throws IOException {
         Map<String, String> response = new HashMap<>();
 
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new MemberException("존재하지 않는 회원입니다. 로그인을 먼저 진행 후 상품을 등록해주세요."));
-        String imageUrl = "imageURL";
+        String imageUrl = s3service.imageUpload(image);
 
         //! 상품 -> 브랜드에 대한 부분도 해야되는데 이걸 어떻게 해야되지 .. 미리 브랜드를 등록을 해놔야되나 DB + ES에다가
         Product product = new Product(
