@@ -6,7 +6,6 @@ import com.sh.Ram.ranking.dto.RankingDto;
 import com.sh.Ram.search.service.SearchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -65,7 +64,7 @@ public class SearchController {
 
     @GetMapping("")
     public String main() {
-        return "search/main";
+        return "search/search";
     }
 
 }
