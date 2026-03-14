@@ -63,4 +63,15 @@ public class ProductController {
 
         return productService.getProductInfo(image).block();
     }
+
+    @GetMapping("{id}")
+    public String productDetail(
+            @PathVariable Long id,
+            Model model
+    ){
+        ProductDto productDto = productService.getProductDetail(id);
+        model.addAttribute("product", productDto);
+
+        return "product/productDetail";
+    }
 }

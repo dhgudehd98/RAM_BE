@@ -122,4 +122,10 @@ public class ProductService {
                 });
 
     }
+
+    public ProductDto getProductDetail(Long productId) {
+        Product product = productRepository.findById(productId).get();
+        return new ProductDto(product);
+    }
+
 }
