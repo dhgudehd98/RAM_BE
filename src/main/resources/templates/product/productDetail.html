@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>상품 상세</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --black: #111111;
+            --white: #fafafa;
+            --gray-100: #f4f4f4;
+            --gray-200: #e8e8e8;
+            --gray-400: #aaaaaa;
+            --gray-600: #666666;
+            --accent: #e8432d;
+            --accent-hover: #c73320;
+            --up: #e8432d;
+            --border: #e2e2e2;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--white);
+            color: var(--black);
+            min-height: 100vh;
+        }
+
+        /* NAV */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            height: 60px;
+        }
+
+        .nav-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 26px;
+            letter-spacing: 3px;
+            color: var(--black);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--gray-600);
+            letter-spacing: 0.5px;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover { color: var(--black); }
+
+        /* BREADCRUMB */
+        .breadcrumb {
+            padding: 16px 40px;
+            font-size: 12px;
+            color: var(--gray-400);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .breadcrumb span { margin: 0 6px; }
+
+        /* MAIN LAYOUT */
+        .product-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 40px 80px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: start;
+        }
+
+        /* IMAGE SECTION */
+        .image-section {}
+
+        .main-image-wrap {
+            position: relative;
+            background: var(--gray-100);
+            border-radius: 4px;
+            overflow: hidden;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .main-image-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .main-image-wrap:hover img { transform: scale(1.03); }
+
+        .image-nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            color: var(--gray-600);
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .image-nav-btn:hover { background: var(--black); color: white; border-color: var(--black); }
+        .image-nav-btn.prev { left: 12px; }
+        .image-nav-btn.next { right: 12px; }
+
+        .thumbnail-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .thumbnail {
+            width: 72px;
+            height: 72px;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 2px solid transparent;
+            cursor: pointer;
+            background: var(--gray-100);
+            transition: border-color 0.2s;
+        }
+
+        .thumbnail.active { border-color: var(--black); }
+
+        .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* INFO SECTION */
+        .info-section {}
+
+        .notice-banner {
+            background: #fff8f0;
+            border: 1px solid #fde8c8;
+            border-radius: 4px;
+            padding: 12px 16px;
+            font-size: 12px;
+            color: #b06000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .original-price {
+            font-size: 13px;
+            color: var(--gray-400);
+            text-decoration: line-through;
+            margin-bottom: 4px;
+        }
+
+        .current-price {
+            font-size: 36px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            color: var(--black);
+            margin-bottom: 16px;
+        }
+
+        .product-name-ko {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--black);
+            margin-bottom: 4px;
+        }
+
+        .product-name-en {
+            font-size: 13px;
+            color: var(--gray-400);
+            margin-bottom: 14px;
+        }
+
+        .rating-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .star { color: #f5a623; font-size: 14px; }
+        .rating-score { font-weight: 700; color: var(--black); }
+        .review-link { color: var(--gray-400); text-decoration: underline; cursor: pointer; }
+
+        .tag-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .tag-rank { background: #fff3e0; color: #e65100; }
+        .tag-hot { background: #fce4ec; color: #c62828; }
+        .tag-category { background: var(--gray-100); color: var(--gray-600); }
+
+        .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+        /* SHIPPING */
+        .shipping-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+
+        .shipping-fast {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .bolt { color: #4caf50; font-size: 14px; }
+
+        .shipping-fast strong { font-weight: 700; color: var(--black); }
+        .shipping-fast span { color: var(--gray-600); }
+
+        .shipping-normal { font-size: 12px; color: var(--gray-600); text-align: right; }
+
+        /* META */
+        .meta-row {
+            display: flex;
+            gap: 24px;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+            color: var(--gray-600);
+        }
+
+        .meta-row span strong { color: var(--black); font-weight: 600; }
+
+        /* BENEFIT */
+        .benefit-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+
+        .benefit-text { color: var(--gray-600); }
+        .benefit-link { font-size: 12px; color: var(--gray-400); text-decoration: underline; cursor: pointer; }
+
+        /* ACTION BUTTONS */
+        .action-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .btn-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-size: 11px;
+            color: var(--gray-600);
+            transition: all 0.2s;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        .btn-icon:hover { border-color: var(--black); color: var(--black); }
+        .btn-icon .icon { font-size: 18px; }
+        .btn-icon .count { font-size: 11px; color: var(--gray-400); }
+
+        .btn-buy {
+            flex: 1;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            height: 52px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            font-family: 'Noto Sans KR', sans-serif;
+            transition: background 0.2s;
+        }
+
+        .btn-buy:hover { background: var(--accent-hover); }
+
+        /* AD BANNER */
+        .ad-banner {
+            background: var(--gray-100);
+            border-radius: 8px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .ad-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 12px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .ad-text strong { font-size: 13px; display: block; margin-bottom: 2px; }
+        .ad-text span { font-size: 12px; color: var(--gray-600); }
+        .ad-label { margin-left: auto; font-size: 10px; color: var(--gray-400); border: 1px solid var(--gray-200); padding: 2px 5px; border-radius: 2px; }
+
+        /* TRADE INFO */
+        .trade-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 0;
+            border-top: 1px solid var(--border);
+            font-size: 13px;
+        }
+
+        .trade-count { font-weight: 600; }
+        .trade-change { color: var(--up); font-size: 12px; margin-left: 6px; }
+        .trade-option { font-size: 12px; color: var(--gray-400); cursor: pointer; }
+
+        /* DESCRIPTION */
+        .description-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 40px 80px;
+            border-top: 1px solid var(--border);
+        }
+
+        .section-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 22px;
+            letter-spacing: 2px;
+            padding: 32px 0 20px;
+            color: var(--black);
+        }
+
+        .description-text {
+            font-size: 14px;
+            line-height: 1.8;
+            color: var(--gray-600);
+            max-width: 600px;
+        }
+
+        /* AUCTION STATUS */
+        .auction-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .auction-active { background: #e8f5e9; color: #2e7d32; }
+        .auction-ended { background: #fce4ec; color: #c62828; }
+        .auction-pending { background: #fff8e1; color: #f57f17; }
+
+        @media (max-width: 768px) {
+            .product-wrapper { grid-template-columns: 1fr; gap: 32px; padding: 20px; }
+            nav { padding: 0 20px; }
+            .breadcrumb { padding: 12px 20px; }
+            .current-price { font-size: 28px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+    <a href="/" class="nav-logo">RAM</a>
+</nav>
+
+<!-- BREADCRUMB -->
+<div class="breadcrumb">
+    홈 <span>›</span> 의류 <span>›</span> 후드 <span>›</span>
+    <strong th:text="${product.name}">아이앱 스튜디오 후드 라이트 그레이</strong>
+</div>
+
+<!-- PRODUCT DETAIL -->
+<div class="product-wrapper">
+
+    <!-- LEFT: IMAGE -->
+    <div class="image-section">
+        <div class="main-image-wrap">
+            <img id="mainImage"
+                 th:src="${product.imageUrl}"
+                 src="https://via.placeholder.com/600x600/f4f4f4/aaaaaa?text=Product+Image"
+                 alt="상품 이미지">
+            <button class="image-nav-btn prev">&#8249;</button>
+            <button class="image-nav-btn next">&#8250;</button>
+        </div>
+    </div>
+
+    <!-- RIGHT: INFO -->
+    <div class="info-section">
+        <!-- 가격 -->
+        <div class="current-price" th:text="${product.price != null ? #numbers.formatInteger(product.price, 3, 'COMMA') + '원' : '-'}"></div>
+
+        <!-- 상품명 -->
+        <div class="product-name-ko" th:text="${product.name}"></div>
+        <div class="product-name-en" th:text="${product.brand}"></div>
+
+
+        <!-- 태그 -->
+        <div class="tag-row">
+            <span class="tag tag-rank">월간 후디 6위</span>
+            <span class="tag tag-hot">지금 인기</span>
+            <span class="tag tag-category">후드</span>
+        </div>
+
+        <div class="section-title">PRODUCT DESCRIPTION
+            <p class="description-text" th:text="${product.description}"></p>
+        </div>
+
+
+        <!-- 경매 상태 -->
+        <div th:if="${product.auctionStatus != null}">
+            <span class="auction-badge auction-active"
+                  th:classappend="${product.auctionStatus.name() == 'ACTIVE'} ? 'auction-active' : (${product.auctionStatus.name() == 'ENDED'} ? 'auction-ended' : 'auction-pending')">
+                🔴 <span th:text="${product.auctionStatus}">경매 진행중</span>
+            </span>
+        </div>
+
+        <!-- 메타 정보 -->
+        <div class="meta-row">
+            <span>상품 등록일 <strong>24/07/04</strong></span>
+            <span>발매가 <strong th:text="${product.price != null ? #numbers.formatInteger(product.price, 3, 'COMMA') + '원' : '-'}"></strong></span>
+        </div>
+
+        <div class="action-row">
+            <button class="btn-icon">
+                <span class="icon">🔖</span>
+                <span class="count">3.6만</span>
+            </button>
+            <button class="btn-icon">
+                <span class="icon">↑</span>
+                <span>공유</span>
+            </button>
+
+            <!-- 하트 버튼 -->
+            <button class="btn-icon btn-heart" onclick="toggleHeart(this)">
+                <span class="icon heart-icon">🤍</span>
+                <span class="wish-size" th:text="${product.wishListSize}"></span>
+            </button>
+
+            <!--            <button class="btn-buy">경매 등록</button>-->
+        </div>
+
+
+        <!-- 광고 배너 -->
+        <div class="ad-banner">
+            <div class="ad-icon">🛍</div>
+            <div class="ad-text">
+                <strong>March Expo 최대 20% 할인</strong>
+                <span>알리바바닷컴 인기상품</span>
+            </div>
+            <span class="ad-label">AD</span>
+        </div>
+
+
+    </div>
+</div>
+
+<script>
+    function toggleHeart(btn) {
+        const icon = btn.querySelector('.heart-icon');
+        const sizeEl = btn.querySelector('.wish-size');
+        const productId = [[${product.id}]];
+
+        fetch(`/product/wishList/${productId}`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                icon.textContent = data.isWished ? '❤️' : '🤍';
+                sizeEl.textContent = data.wishListSize; // size 즉시 업데이트
+            });
+    }
+</script>
+</body>
+</html>
