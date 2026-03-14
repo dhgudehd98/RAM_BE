@@ -34,9 +34,10 @@ public interface ProductDocumentRepository extends ElasticsearchRepository<Produ
     @Query("{" +
             "\"multi_match\": {" +
             "\"query\": \"?0\"," +
-            "\"type\": \"cross_fields\"," +
+            "\"type\": \"best_fields\"," +
             "\"fields\": [\"brand^50\", \"name^1\"]," +
-            "\"minimum_should_match\": \"70%\"" +
+            "\"minimum_should_match\": \"70%\"," +
+            "\"fuzziness\": \"AUTO\"" +
             "}" +
             "}")
     List<ProductDocument> searchByKeyword(String keyword);

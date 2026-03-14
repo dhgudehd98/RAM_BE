@@ -565,6 +565,16 @@
     </div>
 </nav>
 
+<!--로딩 오버레이 화면 구현 -->
+<div id="loadingOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+     background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center;">
+    <div style="text-align:center; color:white;">
+        <div class="spinner-border text-light" role="status"></div>
+        <p style="margin-top:10px;">AI가 상품 정보를 분석중입니다...</p>
+    </div>
+</div>
+
+
 <!-- 상품 등록 모달 -->
 <div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
     <div class="modal">
@@ -593,9 +603,9 @@
         <div class="form-grid">
             <div class="form-group full">
                 <label class="auction-check-row" onclick="toggleAuction()">
-                    <input type="checkbox" id="writeAI">
+                    <input type="checkbox" id="aiAnalysis">
                     <div class="custom-checkbox" id="writeAiCheck"></div>
-                    <span class="auction-check-label">🔨 AI로 작성하기</span>
+                    <span class="auction-check-label">AI로 작성하기</span>
                 </label>
             </div>
 
@@ -741,6 +751,7 @@
     function previewImage(e) {
         const file = e.target.files[0];
         if (!file) return;
+
         const reader = new FileReader();
         reader.onload = (ev) => {
             const preview = document.getElementById('imagePreview');
@@ -750,6 +761,31 @@
             placeholder.style.display = 'none';
         };
         reader.readAsDataURL(file);
+
+        const isAiChecked = document.getElementById('aiAnalysis').checked;
+        if (isAiChecked) {
+            const formData = new FormData();
+            formData.append('image', file);
+
+            // 로딩 시작
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.style.display = 'flex';
+
+            fetch('/product/ai', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('productName').value = data.productName;
+                    document.getElementById('brandName').value = data.brandName;
+                    document.getElementById('description').value = data.description;
+                })
+                .finally(() => {
+                    // 로딩 종료 (성공/실패 상관없이)
+                    overlay.style.display = 'none';
+                });
+        }
     }
 
     function toggleAuction() {

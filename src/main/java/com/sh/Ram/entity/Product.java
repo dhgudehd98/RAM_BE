@@ -67,4 +67,19 @@ public class Product {
     }
 
 
+    @Override
+    public String toString() {
+        return "Product{" +
+                "id=" + id +
+                ", member=" + member +
+                ", name='" + name + '\'' +
+                ", brand=" + brand +
+                ", description='" + description + '\'' +
+                ", category=" + category +
+                ", imageUrl='" + imageUrl + '\'' +
+                ", price=" + price +
+                ", wishList=" + wishList +
+                ", auctions=" + auctions +
+                '}';
+    }
 }

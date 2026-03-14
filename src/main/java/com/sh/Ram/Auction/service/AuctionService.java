@@ -57,6 +57,16 @@ public class AuctionService {
     @Transactional
     public AuctionDto createAuction(AuctionCreateRequest request) {
 
+        // 경매 등록조회 (중복 경매 방지)
+        boolean exists = auctionRepository.existsActiveAuctionByProductId(
+                request.getProductId(),
+                AuctionStatus.CLOSED
+        );
+
+        if (exists) {
+            throw new AuctionException("이미 진행 중인 경매가 존재합니다.");
+        }
+
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new AuctionException("경매를 찾을 수 없습니다."));
 

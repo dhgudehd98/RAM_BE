@@ -5,6 +5,7 @@ import com.sh.Ram.Auction.dto.AuctionDto;
 import com.sh.Ram.Auction.dto.AuctionUpdateRequest;
 import com.sh.Ram.Auction.repository.AuctionRepository;
 import com.sh.Ram.Auction.service.AuctionService;
+import com.sh.Ram.bid.repository.BidRepository;
 import com.sh.Ram.entity.Product;
 import com.sh.Ram.enums.AuctionStatus;
 import com.sh.Ram.product.repository.ProductRepository;
@@ -32,6 +33,9 @@ public class AuctionCrudTest {
     private ProductRepository productRepository;
     @Autowired
     private AuctionRepository auctionRepository;
+
+    @Autowired
+    private BidRepository bidRepository;
 
     @Test
     void 경매_CRUD_테스트() {
@@ -127,6 +131,48 @@ public class AuctionCrudTest {
 
         System.out.println("===== TEST END =====");
 
+    }
+
+    @Test
+    void 경매_중복_방지_테스트() {
+
+        System.out.println("=== AUCTION DUPLICATE TEST START ===");
+
+        // 상품 조회
+        Product product = productRepository.findAll().get(0);
+
+        System.out.println("product id = " + product.getId());
+
+        bidRepository.deleteAll();
+        auctionRepository.deleteAll();
+
+        // 첫 경매 생성
+        AuctionCreateRequest request = new AuctionCreateRequest();
+        request.setProductId(product.getId());
+        request.setStartPrice(10000);
+        request.setStartDate(LocalDate.now());
+        request.setEndDate(LocalDate.now().plusDays(2));
+
+        AuctionDto auction = auctionService.createAuction(request);
+
+        System.out.println("auction id = " + auction.getId());
+
+        AuctionCreateRequest request2 = new AuctionCreateRequest();
+        request2.setProductId(product.getId());
+        request2.setStartPrice(20000);
+        request2.setStartDate(LocalDate.now());
+        request2.setEndDate(LocalDate.now().plusDays(2));
+
+        // 예외 발생 확인
+        Exception exception = assertThrows(
+                RuntimeException.class,
+                () -> auctionService.createAuction(request2)
+        );
+
+        System.out.println("exception msg = " + exception.getMessage());
+
+
+        System.out.println("=== AUCTION DUPLICATE TEST END ===");
     }
 
 }

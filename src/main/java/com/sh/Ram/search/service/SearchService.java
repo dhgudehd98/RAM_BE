@@ -3,10 +3,14 @@ package com.sh.Ram.search.service;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
+import com.sh.Ram.Auction.repository.AuctionRepository;
+import com.sh.Ram.Auction.service.AuctionService;
 import com.sh.Ram.elasticSearch.brand.document.BrandDocument;
 import com.sh.Ram.elasticSearch.brand.repository.BrandDocumentRepository;
 import com.sh.Ram.elasticSearch.product.document.ProductDocument;
 import com.sh.Ram.elasticSearch.product.repository.ProductDocumentRepository;
+import com.sh.Ram.entity.Product;
+import com.sh.Ram.enums.AuctionStatus;
 import com.sh.Ram.product.dto.ProductDto;
 import com.sh.Ram.product.repository.ProductRepository;
 import com.sh.Ram.ranking.dto.RankingDto;
@@ -23,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,6 +37,7 @@ public class SearchService {
     private final ProductRepository productRepository;
     private final ProductDocumentRepository productDocumentRepository;
     private final RedisRealTimeSearchRanking redisRanking;
+    private final AuctionRepository auctionRepository;
 
     private final ElasticsearchClient elasticsearchClient;
 
@@ -41,12 +47,27 @@ public class SearchService {
         //Redis에 keyword 저장
         redisRanking.setKeyword(keyword);
 
-        return productDocumentRepository.searchByKeyword(keyword).stream().map(document -> {
-            ProductDto dto = new ProductDto();
-            dto.setName(document.getName());
-            dto.setBrand(document.getBrand());
-            return dto;
-        }).collect(Collectors.toList());
+        List<ProductDocument> documents = productDocumentRepository.searchByKeyword(keyword);
+        List<Long> productIds = documents.stream()
+                .map(document -> Long.parseLong(document.getId()))
+                .collect(Collectors.toList());
+
+        Map<Long, AuctionStatus> auctionMap = auctionRepository
+                .findAuctionStatusByProductIdIn(productIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (AuctionStatus) row[1]
+                ));
+
+        return documents
+                .stream()
+                .map(document -> {
+                    ProductDto productDto = new ProductDto(document);
+                    productDto.setAuctionStatus(auctionMap.get(Long.parseLong(document.getId())));
+                    return productDto;
+                })
+                .collect(Collectors.toList());
 
     }
 
@@ -95,5 +116,37 @@ public class SearchService {
 
     public List<RankingDto> getKeywordRanking() {
         return redisRanking.getKeywordRanking();
+    }
+
+    public List<ProductDto> searchByKeywordByDB(String keyword) {
+
+        long start = System.currentTimeMillis();
+        List<Product> productList = productRepository.findProductByKeyword(keyword);
+
+        List<Long> productIds = productList.stream().map(product -> product.getId()).collect(Collectors.toList());
+
+        Map<Long , AuctionStatus> auctionMap = auctionRepository
+                .findAuctionStatusByProductIdIn(productIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (AuctionStatus) row[1]
+                ));
+
+        List<ProductDto> result = productList.stream()
+                .map(product -> {
+                    ProductDto dto = new ProductDto(product);
+                    dto.setAuctionStatus(auctionMap.get(product.getId()));
+
+                    return dto;
+
+                })
+                .collect(Collectors.toList());
+
+        long end = System.currentTimeMillis();
+
+        log.info("Time To End : " + (end - start));
+
+        return result;
     }
 }
