@@ -20,6 +20,7 @@ public class ProductDto {
     private String description;
     private Integer price;
     private String imageUrl;
+    private Integer wishListSize;
     private AuctionStatus auctionStatus;
 //    private Category category;
 
@@ -60,6 +61,7 @@ public class ProductDto {
         this.brand = product.getBrand().getBrandName();
         this.description = product.getDescription();
         this.price = product.getPrice();
+        this.wishListSize = product.getWishList().size();
         this.imageUrl = product.getImageUrl();
     }
 

@@ -74,4 +74,13 @@ public class ProductController {
 
         return "product/productDetail";
     }
+
+    @PostMapping("/wishList/{id}")
+    @ResponseBody
+    public Map<String, Object> addWishList(
+            @PathVariable("id") Long productId
+    ) {
+        Long memberId = 1L;
+        return productService.addWishList(productId, memberId);
+    }
 }

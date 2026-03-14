@@ -421,18 +421,6 @@
 <!-- NAV -->
 <nav>
     <a href="/" class="nav-logo">RAM</a>
-    <ul class="nav-links">
-        <li><a href="#">스니커즈</a></li>
-        <li><a href="#">의류</a></li>
-        <li><a href="#">가방</a></li>
-        <li><a href="#">액세서리</a></li>
-        <li><a href="#">경매</a></li>
-    </ul>
-    <div style="display:flex;gap:16px;align-items:center;">
-        <span style="font-size:20px;cursor:pointer;">🔍</span>
-        <span style="font-size:20px;cursor:pointer;">🛒</span>
-        <span style="font-size:20px;cursor:pointer;">👤</span>
-    </div>
 </nav>
 
 <!-- BREADCRUMB -->
@@ -505,7 +493,7 @@
             <!-- 하트 버튼 -->
             <button class="btn-icon btn-heart" onclick="toggleHeart(this)">
                 <span class="icon heart-icon">🤍</span>
-                <span>찜</span>
+                <span class="wish-size" th:text="${product.wishListSize}"></span>
             </button>
 
             <!--            <button class="btn-buy">경매 등록</button>-->
@@ -527,25 +515,18 @@
 </div>
 
 <script>
-    // // 썸네일 클릭 시 메인 이미지 변경
-    // document.querySelectorAll('.thumbnail').forEach(thumb => {
-    //     thumb.addEventListener('click', function() {
-    //         document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
-    //         this.classList.add('active');
-    //         document.getElementById('mainImage').src = this.querySelector('img').src;
-    //     });
-    // });
-
-    <script>
-        function toggleHeart(btn) {
+    function toggleHeart(btn) {
         const icon = btn.querySelector('.heart-icon');
-        if (icon.textContent === '🤍') {
-        icon.textContent = '❤️';
-    } else {
-        icon.textContent = '🤍';
+        const sizeEl = btn.querySelector('.wish-size');
+        const productId = [[${product.id}]];
+
+        fetch(`/product/wishList/${productId}`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                icon.textContent = data.isWished ? '❤️' : '🤍';
+                sizeEl.textContent = data.wishListSize; // size 즉시 업데이트
+            });
     }
-    }
-</script>
 </script>
 </body>
 </html>

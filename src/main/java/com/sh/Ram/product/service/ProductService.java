@@ -4,10 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sh.Ram.Auction.repository.AuctionRepository;
 import com.sh.Ram.aws.service.S3Service;
 import com.sh.Ram.common.exception.member.MemberException;
-import com.sh.Ram.entity.Auction;
-import com.sh.Ram.entity.Brand;
-import com.sh.Ram.entity.Member;
-import com.sh.Ram.entity.Product;
+import com.sh.Ram.entity.*;
 import com.sh.Ram.enums.AuctionStatus;
 import com.sh.Ram.member.repository.MemberRepository;
 import com.sh.Ram.product.dto.AiProductDto;
@@ -15,6 +12,7 @@ import com.sh.Ram.product.dto.LlmResponseDto;
 import com.sh.Ram.product.dto.ProductDto;
 import com.sh.Ram.product.dto.RegisterProductDto;
 import com.sh.Ram.product.repository.ProductRepository;
+import com.sh.Ram.wishList.repository.WishListRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -33,6 +31,7 @@ import reactor.core.publisher.Mono;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +41,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final MemberRepository memberRepository;
     private final AuctionRepository auctionRepository;
+    private final WishListRepository wishListRepoistory;
     private final WebClient webClient;
     private final S3Service s3service;
 
@@ -128,4 +128,27 @@ public class ProductService {
         return new ProductDto(product);
     }
 
+    @Transactional
+    public Map<String , Object> addWishList(Long productId, Long memberId) {
+
+        Member member = memberRepository.getReferenceById(memberId);
+        Product product = productRepository.getReferenceById(productId);
+
+        Optional<WishList> existing = wishListRepoistory.findByMemberAndProduct(member, product);
+
+        /**
+         * WishList -> 찜 추가되면 true 리턴 , 찜 삭제 false 리턴
+         *
+         */
+        if (existing.isPresent()) {
+            wishListRepoistory.delete(existing.get());
+        } else {
+            wishListRepoistory.save(new WishList(member, product));
+        }
+
+        return Map.of(
+                "isWished", existing.isEmpty(),
+                "wishListSize", wishListRepoistory.countByProductId(productId)
+        );
+    }
 }
