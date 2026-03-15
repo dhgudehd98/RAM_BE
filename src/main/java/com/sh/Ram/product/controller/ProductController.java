@@ -63,4 +63,24 @@ public class ProductController {
 
         return productService.getProductInfo(image).block();
     }
+
+    @GetMapping("{id}")
+    public String productDetail(
+            @PathVariable Long id,
+            Model model
+    ){
+        ProductDto productDto = productService.getProductDetail(id);
+        model.addAttribute("product", productDto);
+
+        return "product/productDetail";
+    }
+
+    @PostMapping("/wishList/{id}")
+    @ResponseBody
+    public Map<String, Object> addWishList(
+            @PathVariable("id") Long productId
+    ) {
+        Long memberId = 1L;
+        return productService.addWishList(productId, memberId);
+    }
 }

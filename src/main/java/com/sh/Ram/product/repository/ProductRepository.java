@@ -12,6 +12,8 @@ import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
@@ -23,4 +25,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 //    @Query("SELECT p FROM Product p WHERE p.brand.brandName LIKE %:keyword% OR p.name LIKE %:keyword%")
     @Query("SELECT p FROM Product p WHERE p.brand.brandName LIKE %:keyword% OR p.name LIKE %:keyword%")
     List<Product> findProductByKeyword(@Param("keyword") String keyword);
+
+    @Query("select p from Product p left join fetch p.wishList where p.id = :id")
+    Optional<Product> findByIdWithWishListSize(@Param("id") Long id);
 }
