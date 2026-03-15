@@ -40,4 +40,7 @@ public class Member extends BaseEntity {
 
     @OneToMany(mappedBy = "member")
     private List<Bid> bid = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member")
+    private List<Notification> notifications = new ArrayList<>();
 }
