@@ -62,7 +62,7 @@ public class LoginService {
         response.addCookie(cookie);
 
         return ResponseEntity.ok(
-                Map.of("result", "Y", "msg", "정상적으로 로그인이 완료되었습니다."));
+                Map.of("result", "Y", "msg", "정상적으로 로그인이 완료되었습니다.", "token", token));
     }
 
     public boolean duplicationNickName(String nickName) {
