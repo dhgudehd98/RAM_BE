@@ -7,8 +7,12 @@ import com.sh.Ram.Auction.repository.AuctionRepository;
 import com.sh.Ram.common.exception.auction.AuctionException;
 import com.sh.Ram.entity.Auction;
 import com.sh.Ram.entity.Product;
+import com.sh.Ram.entity.WishList;
 import com.sh.Ram.enums.AuctionStatus;
+import com.sh.Ram.enums.NotificationType;
+import com.sh.Ram.notification.service.NotificationService;
 import com.sh.Ram.product.repository.ProductRepository;
+import com.sh.Ram.wishList.repository.WishListRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +32,9 @@ import java.util.Map;
 public class AuctionService {
     private final AuctionRepository auctionRepository;
     private final ProductRepository productRepository;
+    private final WishListRepository wishListRepository;
+
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
     public Page<AuctionDto> auctionList(int page, String status) {
@@ -116,5 +123,18 @@ public class AuctionService {
         auction.setEndDate(request.getEndDate());
 
         return new AuctionDto(auction);
+    }
+
+    public void registAuction(Long productId) {
+        List<WishList> wishLists = wishListRepository.findByProductId(productId);
+
+        wishLists.forEach(wishList -> {
+            notificationService.send(
+                    wishList.getMember().getId(),
+                    "찜한 상품이 경매 상품으로 등록돼었어요. 확인해보세요.",
+                    NotificationType.WISHLIST
+            );
+        });
+
     }
 }

@@ -41,4 +41,10 @@ public class Notification {
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
     }
+
+    public Notification(Member member, String message, NotificationType type) {
+        this.member = member;
+        this.message = message;
+        this.type = type;
+    }
 }
