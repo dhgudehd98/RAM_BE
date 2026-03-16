@@ -3,7 +3,10 @@ package com.sh.Ram.login.controller;
 import com.sh.Ram.login.dto.LoginRequestDto;
 import com.sh.Ram.login.dto.MemberLoginRequestDto;
 import com.sh.Ram.login.service.LoginService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,17 +21,24 @@ public class LoginController {
     // 로그인 페이지
     @GetMapping("")
     public String login() {
-
         return "login/login";
     }
 
-    // 로그인 확인
-    @PostMapping("/check")
+    // 로그아웃
+    @PostMapping("/logout")
+    public void logout(Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        loginService.logout(memberId);
+    }
+
+    // 로그인 - 비밀번호 / 아이디 유효성 검사
+    @PostMapping("")
     @ResponseBody
-    public Map<String, String> check(
-            @RequestBody MemberLoginRequestDto memberLoginRequestDto
+    public ResponseEntity<?> login(
+            @RequestBody MemberLoginRequestDto memberLoginRequestDto,
+            HttpServletResponse response
     ) {
-        return loginService.loginCheck(memberLoginRequestDto);
+        return loginService.login(memberLoginRequestDto, response);
     }
 
     // 회원 가입 페이지
@@ -40,10 +50,10 @@ public class LoginController {
     // 회원가입
     @PostMapping("/join")
     @ResponseBody
-    public Map<String, String> memberJoin(
+    public Map<String, String> join(
             @RequestBody LoginRequestDto loginRequestDto
     ) {
-        return loginService.memberJoin(loginRequestDto);
+        return loginService.join(loginRequestDto);
     }
 
     // 이메일 중복 확인
