@@ -1,7 +1,10 @@
 package com.sh.Ram.entity;
 
+import com.sh.Ram.login.dto.LoginRequestDto;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,11 +13,14 @@ import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Member extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String name;
 
     private String email;
 
@@ -43,4 +49,13 @@ public class Member extends BaseEntity {
 
     @OneToMany(mappedBy = "member")
     private List<Notification> notifications = new ArrayList<>();
+
+    // 여기는 나중에 암호화해서 저장
+    public Member(LoginRequestDto loginRequestDto, String password) {
+        this.name = loginRequestDto.getName();
+        this.email = loginRequestDto.getEmail();
+        this.nickname = loginRequestDto.getNickName();
+        this.phone = loginRequestDto.getPhone();
+        this.password = password;
+    }
 }
