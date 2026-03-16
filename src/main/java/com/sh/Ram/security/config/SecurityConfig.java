@@ -44,6 +44,7 @@ public class SecurityConfig {
                                 "/api/**",
                                 "/product/list",
                                 "/product/{id}",
+                                "/notification/subscribe",
                                 "/css/**",
                                 "/js/**"
                         ).permitAll()

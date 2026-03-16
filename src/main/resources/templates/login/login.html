@@ -25,7 +25,6 @@
             grid-template-columns: 1fr 1fr;
         }
 
-        /* LEFT PANEL */
         .left-panel {
             background: var(--black);
             display: flex;
@@ -67,10 +66,7 @@
         }
 
         .brand span { color: var(--accent); }
-
-        .left-content {
-            z-index: 1;
-        }
+        .left-content { z-index: 1; }
 
         .left-title {
             font-family: 'Bebas Neue', sans-serif;
@@ -81,10 +77,7 @@
             margin-bottom: 24px;
         }
 
-        .left-title span {
-            color: var(--accent);
-            display: block;
-        }
+        .left-title span { color: var(--accent); display: block; }
 
         .left-desc {
             font-size: 14px;
@@ -109,13 +102,8 @@
             letter-spacing: 0.5px;
         }
 
-        .left-bottom {
-            font-size: 12px;
-            color: #333;
-            z-index: 1;
-        }
+        .left-bottom { font-size: 12px; color: #333; z-index: 1; }
 
-        /* RIGHT PANEL */
         .right-panel {
             display: flex;
             align-items: center;
@@ -135,9 +123,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .login-header {
-            margin-bottom: 40px;
-        }
+        .login-header { margin-bottom: 40px; }
 
         .login-header h2 {
             font-family: 'Bebas Neue', sans-serif;
@@ -147,35 +133,20 @@
             margin-bottom: 8px;
         }
 
-        .login-header p {
-            font-size: 14px;
-            color: var(--muted);
-        }
+        .login-header p { font-size: 14px; color: var(--muted); }
 
-        /* ERROR / SUCCESS MESSAGE */
         .alert {
             padding: 12px 16px;
             border-radius: 8px;
             font-size: 13px;
             margin-bottom: 20px;
+            display: none;
         }
 
-        .alert-error {
-            background: #fff0ee;
-            border: 1px solid #ffd0c8;
-            color: var(--accent);
-        }
+        .alert-error { background: #fff0ee; border: 1px solid #ffd0c8; color: var(--accent); }
+        .alert-success { background: #f0fff4; border: 1px solid #c8ffd0; color: #2e7d32; }
 
-        .alert-success {
-            background: #f0fff4;
-            border: 1px solid #c8ffd0;
-            color: #2e7d32;
-        }
-
-        /* FORM */
-        .form-group {
-            margin-bottom: 20px;
-        }
+        .form-group { margin-bottom: 20px; }
 
         label {
             display: block;
@@ -225,13 +196,13 @@
 
         .btn-login:hover { background: #222; }
         .btn-login:active { transform: scale(0.99); }
+        .btn-login:disabled { background: #aaa; cursor: not-allowed; }
 
         .divider {
             display: flex;
             align-items: center;
             gap: 12px;
             margin: 24px 0;
-            color: var(--border);
             font-size: 12px;
             color: var(--muted);
         }
@@ -244,11 +215,7 @@
             background: var(--border);
         }
 
-        .join-link {
-            text-align: center;
-            font-size: 13px;
-            color: var(--muted);
-        }
+        .join-link { text-align: center; font-size: 13px; color: var(--muted); }
 
         .join-link a {
             color: var(--black);
@@ -273,7 +240,6 @@
 <!-- LEFT PANEL -->
 <div class="left-panel">
     <a href="/" class="brand">RAM<span>.</span></a>
-
     <div class="left-content">
         <h1 class="left-title">
             RESALE
@@ -291,7 +257,6 @@
             <span class="tag">AUCTION</span>
         </div>
     </div>
-
     <div class="left-bottom">© 2026 RAM. All rights reserved.</div>
 </div>
 
@@ -304,50 +269,123 @@
             <p>계정에 로그인하여 경매에 참여하세요</p>
         </div>
 
-        <!-- 에러 메시지 (Spring Security) -->
-        <div class="alert alert-error" th:if="${param.error}">
-            이메일 또는 비밀번호가 올바르지 않습니다.
+        <!-- 에러 메시지 (JS로 제어) -->
+        <div class="alert alert-error" id="errorMsg"></div>
+
+        <!-- JWT 방식 - form submit 대신 fetch 사용 -->
+        <div class="form-group">
+            <label for="email">이메일</label>
+            <input type="email"
+                   id="email"
+                   placeholder="example@email.com"
+                   required>
         </div>
 
-        <!-- 로그아웃 메시지 -->
-        <div class="alert alert-success" th:if="${param.logout}">
-            로그아웃 되었습니다.
+        <div class="form-group">
+            <label for="password">비밀번호</label>
+            <input type="password"
+                   id="password"
+                   placeholder="비밀번호를 입력하세요"
+                   required>
         </div>
 
-        <!-- Spring Security 로그인 폼 -->
-        <form th:action="@{/login}" method="post">
-            <!-- CSRF 토큰 (Security 자동 처리) -->
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-
-            <div class="form-group">
-                <label for="username">이메일</label>
-                <input type="email"
-                       id="username"
-                       name="username"
-                       placeholder="example@email.com"
-                       required>
-            </div>
-
-            <div class="form-group">
-                <label for="password">비밀번호</label>
-                <input type="password"
-                       id="password"
-                       name="password"
-                       placeholder="비밀번호를 입력하세요"
-                       required>
-            </div>
-
-            <button type="submit" class="btn-login">로그인</button>
-        </form>
+        <button class="btn-login" id="loginBtn" onclick="login()">로그인</button>
 
         <div class="divider">또는</div>
 
         <div class="join-link">
-            아직 계정이 없으신가요? <a th:href="@{/join}">회원가입</a>
+            아직 계정이 없으신가요? <a href="/login/join">회원가입</a>
         </div>
 
     </div>
 </div>
+
+<script>
+    async function login() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const loginBtn = document.getElementById('loginBtn');
+
+        if (!email || !password) {
+            showError('이메일과 비밀번호를 입력해주세요.');
+            return;
+        }
+
+        // 중복 요청 방지
+        loginBtn.disabled = true;
+        loginBtn.textContent = '로그인 중...';
+
+        try {
+            const res = await fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await res.json();
+
+            if (data.result === 'Y') {
+                // JWT 토큰 저장
+                localStorage.setItem('accessToken', data.token);
+                console.log("token : " + data.token);
+                // 로그인 성공시 SSE 연결
+                connectSSE();
+
+                // 메인 페이지로 이동
+                window.location.href = '/product/list';
+            } else {
+                showError(data.msg);
+            }
+        } catch (e) {
+            showError('로그인 중 오류가 발생했습니다.');
+        } finally {
+            loginBtn.disabled = false;
+            loginBtn.textContent = '로그인';
+        }
+    }
+
+    function connectSSE() {
+        const token = localStorage.getItem("accessToken");
+        console.log("connect SSE : " + token);
+
+        const eventSource = new EventSource(`/notification/subscribe?token=${token}`);
+
+        // 연결 성공 시
+        eventSource.onopen = () => {
+            console.log("SSE 연결 성공!");
+        };
+
+        eventSource.addEventListener("notification", (event) => {
+            console.log("notification 이벤트 수신:", event.data);
+            showNotification(event.data);
+        });
+
+        // connect 이벤트도 확인
+        eventSource.addEventListener("connect", (event) => {
+            console.log("connect 이벤트:", event.data);
+        });
+
+        eventSource.onerror = (e) => {
+            console.log("SSE 에러:", e);
+            eventSource.close();
+        };
+    }
+
+    function showNotification(message){
+        console.log("알림 : ", message);
+    }
+
+    function showError(msg) {
+        const errorMsg = document.getElementById('errorMsg');
+        errorMsg.textContent = msg;
+        errorMsg.style.display = 'block';
+    }
+
+    // 엔터키로 로그인
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') login();
+    });
+</script>
 
 </body>
 </html>
