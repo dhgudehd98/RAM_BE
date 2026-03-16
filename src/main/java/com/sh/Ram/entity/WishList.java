@@ -2,6 +2,7 @@ package com.sh.Ram.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import static jakarta.persistence.FetchType.LAZY;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
 public class WishList {
 
     @Id

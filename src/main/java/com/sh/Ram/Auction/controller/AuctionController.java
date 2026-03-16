@@ -10,9 +10,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -27,7 +25,7 @@ public class AuctionController {
     @GetMapping("/list")
     public String auctionList(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(name = "status" ,required = false) String status,
+            @RequestParam(name = "status", required = false) String status,
             Model model
     ) {
 
@@ -36,5 +34,12 @@ public class AuctionController {
         model.addAttribute("auctions", auctions);
         model.addAttribute("status", status);
         return "auction/auctionList";
+    }
+
+    @PostMapping("{id}")
+    public void registAuction(
+            @PathVariable Long productId
+    ) {
+        auctionService.registAuction(productId);
     }
 }
