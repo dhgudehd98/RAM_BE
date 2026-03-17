@@ -5,6 +5,7 @@ import com.sh.Ram.login.dto.MemberLoginRequestDto;
 import com.sh.Ram.login.service.LoginService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -15,6 +16,7 @@ import java.util.Map;
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/login")
+@Slf4j
 public class LoginController {
     private final LoginService loginService;
 

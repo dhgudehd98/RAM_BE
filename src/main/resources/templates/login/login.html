@@ -331,7 +331,7 @@
                 // 메인 페이지로 이동
                 window.location.href = '/product/list';
             } else {
-                showError(data.msg);
+                showError(data.message);
             }
         } catch (e) {
             showError('로그인 중 오류가 발생했습니다.');
@@ -339,6 +339,12 @@
             loginBtn.disabled = false;
             loginBtn.textContent = '로그인';
         }
+    }
+
+    function showError(message) {
+        const errorMsg = document.getElementById('errorMsg');
+        errorMsg.textContent = message;
+        errorMsg.style.display = 'block';
     }
 
     // 엔터키로 로그인

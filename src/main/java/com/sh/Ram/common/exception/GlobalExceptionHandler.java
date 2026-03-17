@@ -56,7 +56,7 @@ public class GlobalExceptionHandler {
         log.error("Error Message : {}", e.getMessage());
         Map<String, String> response = new HashMap<>();
         response.put("result", "N");
-        response.put("msg", "시스템 오류가 발생했습니다. 관리자에게 문의해주세요.");
+        response.put("message", "시스템 오류가 발생했습니다. 관리자에게 문의해주세요.");
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
