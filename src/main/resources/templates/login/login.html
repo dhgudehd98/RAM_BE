@@ -327,9 +327,6 @@
             if (data.result === 'Y') {
                 // JWT 토큰 저장
                 localStorage.setItem('accessToken', data.token);
-                console.log("token : " + data.token);
-                // 로그인 성공시 SSE 연결
-                connectSSE();
 
                 // 메인 페이지로 이동
                 window.location.href = '/product/list';
@@ -342,43 +339,6 @@
             loginBtn.disabled = false;
             loginBtn.textContent = '로그인';
         }
-    }
-
-    function connectSSE() {
-        const token = localStorage.getItem("accessToken");
-        console.log("connect SSE : " + token);
-
-        const eventSource = new EventSource(`/notification/subscribe?token=${token}`);
-
-        // 연결 성공 시
-        eventSource.onopen = () => {
-            console.log("SSE 연결 성공!");
-        };
-
-        eventSource.addEventListener("notification", (event) => {
-            console.log("notification 이벤트 수신:", event.data);
-            showNotification(event.data);
-        });
-
-        // connect 이벤트도 확인
-        eventSource.addEventListener("connect", (event) => {
-            console.log("connect 이벤트:", event.data);
-        });
-
-        eventSource.onerror = (e) => {
-            console.log("SSE 에러:", e);
-            eventSource.close();
-        };
-    }
-
-    function showNotification(message){
-        console.log("알림 : ", message);
-    }
-
-    function showError(msg) {
-        const errorMsg = document.getElementById('errorMsg');
-        errorMsg.textContent = msg;
-        errorMsg.style.display = 'block';
     }
 
     // 엔터키로 로그인

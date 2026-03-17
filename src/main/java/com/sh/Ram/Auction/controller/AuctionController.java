@@ -13,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
@@ -37,9 +38,12 @@ public class AuctionController {
     }
 
     @PostMapping("{id}")
-    public void registAuction(
-            @PathVariable Long productId
+    @ResponseBody
+    public Map<String, String> registAuction(
+            @PathVariable("id") Long productId
     ) {
         auctionService.registAuction(productId);
+
+        return Map.of("Y", "경매 상품으로 정상적으로 등록되었습니다.");
     }
 }
