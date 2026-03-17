@@ -56,13 +56,15 @@ public class NotificationService {
                     .data("연결 완료"));
 
 
-            List<Notification> notifications = notificationRepository.findByMemberIdAndIsReadFalse(memberId);
+            List<Notification> notifications = notificationRepository.findByMemberIdAndIsSendFalse(memberId);
 
             for (Notification notification : notifications) {
                 emitter.send(SseEmitter.event()
                         .name("notification")
                         .data(notification.getMessage()));
+                notification.setSend(true);
             }
+            notificationRepository.saveAll(notifications);
         } catch (IOException e) {
             sseEmitRepository.deleteByMemberId(memberId);
         }
