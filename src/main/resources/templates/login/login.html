@@ -346,8 +346,6 @@
 
     function connectSSE() {
         const token = localStorage.getItem("accessToken");
-        console.log("connect SSE : " + token);
-
         const eventSource = new EventSource(`/notification/subscribe?token=${token}`);
 
         // 연결 성공 시
