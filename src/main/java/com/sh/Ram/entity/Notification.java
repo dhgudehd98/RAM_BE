@@ -32,6 +32,9 @@ public class Notification {
     @Column(nullable = false)
     private boolean isRead = false;
 
+    @Column(nullable = false)
+    private boolean isSend = false;
+
     private LocalDateTime createdAt;
 
     @Enumerated(EnumType.STRING)
@@ -46,5 +49,9 @@ public class Notification {
         this.member = member;
         this.message = message;
         this.type = type;
+    }
+
+    public void setSend(boolean send) {
+        this.isSend = send;
     }
 }
