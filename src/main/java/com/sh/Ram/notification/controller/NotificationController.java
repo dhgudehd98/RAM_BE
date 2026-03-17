@@ -20,7 +20,6 @@ public class NotificationController {
 
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(@RequestParam String token) {
-        log.info("toekn : " + token);
         return notificationService.subscribe(token);
     }
 }

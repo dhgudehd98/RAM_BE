@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -53,6 +54,15 @@ public class NotificationService {
             emitter.send(SseEmitter.event()
                     .name("connect")
                     .data("연결 완료"));
+
+
+            List<Notification> notifications = notificationRepository.findByMemberIdAndIsReadFalse(memberId);
+
+            for (Notification notification : notifications) {
+                emitter.send(SseEmitter.event()
+                        .name("notification")
+                        .data(notification.getMessage()));
+            }
         } catch (IOException e) {
             sseEmitRepository.deleteByMemberId(memberId);
         }
