@@ -29,6 +29,7 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping("/list")
+    @ResponseBody
     public String findAllProduct(
             @RequestParam(required = false) String sort,
             @RequestParam(defaultValue = "0") int page,

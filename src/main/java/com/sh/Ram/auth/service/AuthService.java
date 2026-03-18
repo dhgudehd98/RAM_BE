@@ -1,9 +1,9 @@
-package com.sh.Ram.login.service;
+package com.sh.Ram.auth.service;
 
 import com.sh.Ram.common.exception.member.MemberException;
 import com.sh.Ram.entity.Member;
-import com.sh.Ram.login.dto.LoginRequestDto;
-import com.sh.Ram.login.dto.MemberLoginRequestDto;
+import com.sh.Ram.auth.dto.LoginRequestDto;
+import com.sh.Ram.auth.dto.MemberLoginRequestDto;
 import com.sh.Ram.member.repository.MemberRepository;
 import com.sh.Ram.redis.login.RedisLoginToken;
 import com.sh.Ram.security.jwt.JwtUtil;
@@ -13,7 +13,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import jakarta.servlet.http.Cookie;
@@ -24,7 +23,7 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class LoginService {
+public class AuthService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final RedisLoginToken redisLoginToken;
