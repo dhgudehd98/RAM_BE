@@ -69,7 +69,7 @@ public class AuthService {
         response.addCookie(cookie);
 
         return ResponseEntity.ok(
-                Map.of("result", "Y", "msg", "정상적으로 로그인이 완료되었습니다.", "token", accessToken));
+                Map.of("result", "Y", "message", "정상적으로 로그인이 완료되었습니다.", "token", accessToken));
     }
 
     public ResponseEntity<?> refresh(HttpServletRequest request, HttpServletResponse response) {
