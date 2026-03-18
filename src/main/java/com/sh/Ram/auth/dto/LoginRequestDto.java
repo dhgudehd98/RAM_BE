@@ -1,4 +1,4 @@
-package com.sh.Ram.login.dto;
+package com.sh.Ram.auth.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

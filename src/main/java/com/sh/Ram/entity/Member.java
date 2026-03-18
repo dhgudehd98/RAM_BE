@@ -1,6 +1,6 @@
 package com.sh.Ram.entity;
 
-import com.sh.Ram.login.dto.LoginRequestDto;
+import com.sh.Ram.auth.dto.LoginRequestDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
