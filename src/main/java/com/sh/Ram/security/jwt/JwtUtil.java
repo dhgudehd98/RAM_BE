@@ -17,16 +17,30 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String secret;
 
-    @Value("${jwt.expiration}")
-    private Long expiration;
+    @Value("${jwt.access.expiration}")
+    private Long accessExpiration;
 
-    public String generateToken(Long memberId, String email) {
+    @Value("${jwt.refresh.expiration}")
+    private Long refreshExpiration;
+
+    public String generateAccessToken(Long memberId, String email) {
         return Jwts.builder()
                 .subject(String.valueOf(memberId))
                 .claim("email", email)
                 .claim("type", "access")
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + expiration))
+                .expiration(new Date(System.currentTimeMillis() + accessExpiration))
+                .signWith(getSignKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String generateRefreshToken(Long memberId, String email) {
+        return Jwts.builder()
+                .subject(String.valueOf(memberId))
+                .claim("email", email)
+                .claim("type", "refresh")
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + refreshExpiration))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
     }

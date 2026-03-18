@@ -3,6 +3,7 @@ package com.sh.Ram.login.controller;
 import com.sh.Ram.login.dto.LoginRequestDto;
 import com.sh.Ram.login.dto.MemberLoginRequestDto;
 import com.sh.Ram.login.service.LoginService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +57,11 @@ public class LoginController {
             @RequestBody LoginRequestDto loginRequestDto
     ) {
         return loginService.join(loginRequestDto);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(HttpServletRequest request, HttpServletResponse response) {
+        return loginService.refresh(request, response);
     }
 
     // 이메일 중복 확인
