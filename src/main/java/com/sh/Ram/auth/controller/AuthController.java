@@ -3,6 +3,7 @@ package com.sh.Ram.auth.controller;
 import com.sh.Ram.auth.dto.LoginRequestDto;
 import com.sh.Ram.auth.dto.MemberLoginRequestDto;
 import com.sh.Ram.auth.service.AuthService;
+import jakarta.security.auth.message.AuthException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +49,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refresh(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> refresh(HttpServletRequest request, HttpServletResponse response) throws AuthException {
         return authService.refresh(request, response);
     }
 
