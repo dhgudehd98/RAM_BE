@@ -27,7 +27,7 @@ public class RedisLoginToken {
         return Optional.ofNullable(redisTemplate.opsForValue().get(refreshToken + ":" + memberId));
     }
 
-    public void deleteAccessToken(Long memberId) {
+    public void deleteRefreshToken(Long memberId) {
         redisTemplate.delete(refreshToken + ":" + memberId);
     }
 }

@@ -22,6 +22,7 @@ import jakarta.servlet.http.Cookie;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -77,6 +78,23 @@ public class AuthService {
 
         return ResponseEntity.ok(
                 Map.of("result", "Y", "message", "정상적으로 로그인이 완료되었습니다.", "token", accessToken));
+    }
+
+    public ResponseEntity<?> logout(Long memberId, HttpServletResponse response) throws AuthException {
+
+        // Redis에 저장된 RefreshToken에 대한값이 있는지 확인
+        redisLoginToken.getRefreshToken(memberId).orElseThrow(()-> new AuthException("RefreshToken에 대한 값이 존재하지 않습니다."));
+
+        // Redis에 저장된 RefreshToken 값 삭제
+        redisLoginToken.deleteRefreshToken(memberId);
+
+        // 쿠키 삭제
+        Cookie deleteCookie = new Cookie("refreshToken", null);
+        deleteCookie.setMaxAge(0);
+        deleteCookie.setPath("/");
+        response.addCookie(deleteCookie);
+
+        return ResponseEntity.ok(Map.of("result", "Y", "message", "정상적으로 로그아웃이 완료되었습니다."));
     }
 
     public ResponseEntity<?> refresh(HttpServletRequest request, HttpServletResponse response) throws AuthException {
@@ -136,8 +154,6 @@ public class AuthService {
         return memberRepository.existsByEmail(email);
     }
 
-    public void logout(Long memberId) {
-        redisLoginToken.deleteAccessToken(memberId);
-    }
+
 
 }

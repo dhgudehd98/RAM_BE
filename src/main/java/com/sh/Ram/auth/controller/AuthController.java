@@ -24,9 +24,10 @@ public class AuthController {
 
     // 로그아웃
     @PostMapping("/logout")
-    public void logout(Authentication authentication) {
-        Long memberId = (Long) authentication.getPrincipal();
-        authService.logout(memberId);
+    @ResponseBody
+    public ResponseEntity<?> logout(Authentication authentication, HttpServletResponse response) throws AuthException {
+
+        return authService.logout((Long)authentication.getPrincipal(), response);
     }
 
     // 로그인 - 비밀번호 / 아이디 유효성 검사
