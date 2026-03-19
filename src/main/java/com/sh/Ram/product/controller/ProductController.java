@@ -59,9 +59,6 @@ public class ProductController {
             @RequestPart("image") MultipartFile image
     ) {
         AiProductDto block = productService.getProductInfo(image).block();
-        log.info("=== 상품 정보 ===");
-        log.info(block.toString());
-
         return productService.getProductInfo(image).block();
     }
 
