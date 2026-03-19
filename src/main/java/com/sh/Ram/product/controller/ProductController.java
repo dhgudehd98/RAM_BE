@@ -30,16 +30,11 @@ public class ProductController {
 
     @GetMapping("/list")
     @ResponseBody
-    public String findAllProduct(
+    public Page<ProductDto> findAllProduct(
             @RequestParam(required = false) String sort,
-            @RequestParam(defaultValue = "0") int page,
-            Model model
+            @RequestParam(defaultValue = "0") int page
     ) {
-        Page<ProductDto> products = productService.findAllProduct(sort, page);
-
-        model.addAttribute("products", products);
-        model.addAttribute("sort", sort);
-        return "product/list";
+         return productService.findAllProduct(sort, page);
     }
 
     @PostMapping("/regist")
@@ -59,9 +54,6 @@ public class ProductController {
             @RequestPart("image") MultipartFile image
     ) {
         AiProductDto block = productService.getProductInfo(image).block();
-        log.info("=== 상품 정보 ===");
-        log.info(block.toString());
-
         return productService.getProductInfo(image).block();
     }
 

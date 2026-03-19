@@ -60,10 +60,6 @@ public class AuthService {
         // 로그인 후 , AccessToken에 대한 값 발급
         String accessToken = jwtUtil.generateAccessToken(member.getId(), member.getEmail());
 
-        log.info("====After Login AccessToken ====");
-        log.info("accessToken : " + accessToken);
-        log.info("=================================");
-
         // 로그인 후 , RefreshToken에 대한 값 발급 및 Redis 저장
         String refreshToken = jwtUtil.generateRefreshToken(member.getId(), member.getEmail());
         redisLoginToken.setRefreshToken(refreshToken, member.getId());
