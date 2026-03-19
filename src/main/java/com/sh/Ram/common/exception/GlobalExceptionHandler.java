@@ -18,6 +18,15 @@ import java.util.Map;
 @Slf4j
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(AuthException.class)
+    public ResponseEntity<Map<String, String>> handleAuth(AuthException e) {
+        Map<String, String> res = new HashMap<>();
+        res.put("result", "N");
+        res.put("message", e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(res);
+    }
+
     @ExceptionHandler(ProductException.class)
     public ResponseEntity<Map<String, String>> handleProduct(ProductException e) {
         Map<String, String> res = new HashMap<>();

@@ -8,10 +8,13 @@ import com.sh.Ram.member.repository.MemberRepository;
 import com.sh.Ram.redis.login.RedisLoginToken;
 import com.sh.Ram.security.jwt.JwtUtil;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.security.auth.message.AuthException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -56,6 +59,10 @@ public class AuthService {
         // 로그인 후 , AccessToken에 대한 값 발급
         String accessToken = jwtUtil.generateAccessToken(member.getId(), member.getEmail());
 
+        log.info("====After Login AccessToken ====");
+        log.info("accessToken : " + accessToken);
+        log.info("=================================");
+
         // 로그인 후 , RefreshToken에 대한 값 발급 및 Redis 저장
         String refreshToken = jwtUtil.generateRefreshToken(member.getId(), member.getEmail());
         redisLoginToken.setRefreshToken(refreshToken, member.getId());
@@ -72,29 +79,36 @@ public class AuthService {
                 Map.of("result", "Y", "message", "정상적으로 로그인이 완료되었습니다.", "token", accessToken));
     }
 
-    public ResponseEntity<?> refresh(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> refresh(HttpServletRequest request, HttpServletResponse response) throws AuthException {
         String refreshToken = getCookieValue(request, "refreshToken");
-
-        log.info("==== Refresh Token ====");
-        log.info("RefreshToken : " + refreshToken);
         String accessToken = refreshAccessToken(refreshToken);
 
         return ResponseEntity.ok(Map.of("result", "Y", "accessToken", accessToken));
     }
 
-    private String refreshAccessToken(String refreshToken) {
-        Claims claims = jwtUtil.getClaims(refreshToken);
+    private String refreshAccessToken(String refreshToken) throws AuthException {
+
+        Claims claims;
+
+        try {
+            claims = jwtUtil.getClaims(refreshToken);
+        } catch (ExpiredJwtException e) {
+            throw new AuthException("세션이 만료되었습니다. 다시 로그인해주세요.");
+        } catch (Exception e) {
+            throw new AuthException("유효하지 않는 토큰입니다.");
+        }
+
 
         // refreshToken에 대한 값을 바탕으로 memberId, email에 대한 정보 추출하기
         Long memberId = Long.parseLong(claims.getSubject());
         String email = claims.get("email", String.class);
 
         // Redis에 저장되어 있는 RefreshToken에 대한 값 가져오기
-        String refreshTokenInRedis = redisLoginToken.getRefreshToken(memberId).orElseThrow(()->new IllegalArgumentException("RefreshToken is InValid Token"));
+        String refreshTokenInRedis = redisLoginToken.getRefreshToken(memberId).orElseThrow(()->new AuthException("RefreshToken is InValid Token"));
 
 
         // 쿠키로 전달 받은 RefreshToken에 대한 값과 Redis에 저장되어 있는 RefreshToken에 대한 값이 불일치시 오류 발생
-        if (!refreshToken.equals(refreshTokenInRedis)) throw new IllegalArgumentException("토큰에 대한 정보가 일치하지 않습니다.");
+        if (!refreshToken.equals(refreshTokenInRedis)) throw new AuthException("토큰에 대한 정보가 일치하지 않습니다.");
 
         return jwtUtil.generateAccessToken(memberId, email);
     }
