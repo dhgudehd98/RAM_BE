@@ -2,6 +2,7 @@ package com.sh.Ram.bid.controller;
 
 
 import com.sh.Ram.bid.dto.BidListDto;
+import com.sh.Ram.bid.dto.BidRequestDto;
 import com.sh.Ram.bid.dto.BidResponseDto;
 import com.sh.Ram.bid.dto.HighestBidDto;
 import com.sh.Ram.bid.service.BidService;
@@ -25,9 +26,12 @@ public class BidController {
     @PostMapping("/{auctionId}/bids")
     public BidResponseDto submitBid(
             @PathVariable Long auctionId,
-            @RequestParam Long memberId
+            @RequestBody BidRequestDto request
     ) {
-        return bidService.submitBid(auctionId, memberId);
+        return bidService.submitBid(auctionId,
+                request.getMemberId(),
+                request.getExpectedPrice()
+        );
     }
 
     /**

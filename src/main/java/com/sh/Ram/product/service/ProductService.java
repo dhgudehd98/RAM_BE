@@ -1,7 +1,7 @@
 package com.sh.Ram.product.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sh.Ram.Auction.repository.AuctionRepository;
+import com.sh.Ram.auction.repository.AuctionRepository;
 import com.sh.Ram.aws.service.S3Service;
 import com.sh.Ram.common.exception.member.MemberException;
 import com.sh.Ram.entity.*;
@@ -19,7 +19,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;

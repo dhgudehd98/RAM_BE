@@ -1,7 +1,7 @@
 package com.sh.Ram.product;
 
 
-import com.sh.Ram.Auction.repository.AuctionRepository;
+import com.sh.Ram.auction.repository.AuctionRepository;
 import com.sh.Ram.elasticSearch.product.document.ProductDocument;
 import com.sh.Ram.elasticSearch.product.repository.ProductDocumentRepository;
 import com.sh.Ram.entity.Product;
