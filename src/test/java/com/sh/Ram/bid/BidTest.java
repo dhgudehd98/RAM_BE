@@ -1,7 +1,7 @@
 package com.sh.Ram.bid;
 
 
-import com.sh.Ram.Auction.repository.AuctionRepository;
+import com.sh.Ram.auction.repository.AuctionRepository;
 import com.sh.Ram.bid.dto.BidListDto;
 import com.sh.Ram.bid.dto.BidResponseDto;
 import com.sh.Ram.bid.dto.HighestBidDto;
@@ -86,11 +86,11 @@ public class BidTest {
         Long bidder2 = memberIds.get(1);
 
         // 입찰 실행
-        BidResponseDto bid1 = bidService.submitBid(auction.getId(), bidder1);
+        BidResponseDto bid1 = bidService.submitBid(auction.getId(), bidder1, 10000);
 
         System.out.println("bid1 price = " + bid1.getCurrentPrice());
 
-        BidResponseDto bid2 = bidService.submitBid(auction.getId(), bidder2);
+        BidResponseDto bid2 = bidService.submitBid(auction.getId(), bidder2, 10000);
 
         // 입찰 목록 조회
         Page<BidListDto> bidList =

@@ -1,7 +1,7 @@
 package com.sh.Ram.batch.config;
 
 
-import com.sh.Ram.Auction.repository.AuctionRepository;
+import com.sh.Ram.auction.repository.AuctionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
