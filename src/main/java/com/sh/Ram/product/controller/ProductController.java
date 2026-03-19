@@ -29,6 +29,7 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping("/list")
+    @ResponseBody
     public String findAllProduct(
             @RequestParam(required = false) String sort,
             @RequestParam(defaultValue = "0") int page,
@@ -58,9 +59,6 @@ public class ProductController {
             @RequestPart("image") MultipartFile image
     ) {
         AiProductDto block = productService.getProductInfo(image).block();
-        log.info("=== 상품 정보 ===");
-        log.info(block.toString());
-
         return productService.getProductInfo(image).block();
     }
 

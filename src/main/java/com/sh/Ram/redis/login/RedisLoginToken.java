@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Component
@@ -12,21 +13,21 @@ public class RedisLoginToken {
 
     private final StringRedisTemplate redisTemplate;
 
-    private static final String accessToken = "accessToken";
+    private static final String refreshToken = "refreshToken";
 
-    public void setAccessToken(String token, Long memberId) {
+    public void setRefreshToken(String token, Long memberId) {
         redisTemplate.opsForValue().set(
-                accessToken + ":" + memberId,
+                refreshToken + ":" + memberId,
                 token,
-                24, TimeUnit.HOURS
+                7, TimeUnit.DAYS
         );
     }
 
-    public String getAccessToken(Long memberId) {
-        return redisTemplate.opsForValue().get(accessToken + ":" + memberId);
+    public Optional<String> getRefreshToken(Long memberId) {
+        return Optional.ofNullable(redisTemplate.opsForValue().get(refreshToken + ":" + memberId));
     }
 
-    public void deleteAccessToken(Long memberId) {
-        redisTemplate.delete(accessToken + ":" + memberId);
+    public void deleteRefreshToken(Long memberId) {
+        redisTemplate.delete(refreshToken + ":" + memberId);
     }
 }

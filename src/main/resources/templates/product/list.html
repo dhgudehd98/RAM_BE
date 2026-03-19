@@ -734,6 +734,41 @@
 
 </body>
 <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const token = localStorage.getItem('accessToken');
+        // 로그인을 했을떄만 SSE 연결
+        if (token) connectSSE(token);
+    });
+
+    function connectSSE() {
+        const token = localStorage.getItem("accessToken");
+        const eventSource = new EventSource(`/notification/subscribe?token=${token}`);
+
+        // 연결 성공 시
+        eventSource.onopen = () => {
+            console.log("SSE 연결 성공!");
+        };
+
+        eventSource.addEventListener("notification", (event) => {
+            console.log("notification 이벤트 수신:", event.data);
+            showNotification(event.data);
+        });
+
+        // connect 이벤트도 확인
+        eventSource.addEventListener("connect", (event) => {
+            console.log("connect 이벤트:", event.data);
+        });
+
+        eventSource.onerror = (e) => {
+            console.log("SSE 에러:", e);
+            eventSource.close();
+        };
+    }
+
+    function showNotification(message){
+        console.log("알림 : ", message);
+    }
+
     function openModal() {
         document.getElementById('modalOverlay').classList.add('open');
         document.body.style.overflow = 'hidden';

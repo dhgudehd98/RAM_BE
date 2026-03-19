@@ -31,20 +31,15 @@ public class JwtFilter extends OncePerRequestFilter {
 
         if (token != null && jwtUtil.validateToken(token)) {
             Long memberId = jwtUtil.getMemberId(token);
-            String storedToken = redisLoginToken.getAccessToken(memberId);
 
-            // 로그아웃이 된게 아니라면 token에 대한 값 return 받고, 로그아웃이 되었다면 memberId 자체에 대해 value 값이 존재하지 않기 때문에 null 값 반환
-            if (storedToken != null) {
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                memberId,
-                                null,
-                                List.of(new SimpleGrantedAuthority("USER"))
-                        );
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(
+                            memberId,
+                            null,
+                            List.of(new SimpleGrantedAuthority("USER"))
+                    );
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            }
+            SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 
         filterChain.doFilter(request, response);
