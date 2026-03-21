@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -41,11 +42,10 @@ public class ProductController {
     @ResponseBody
     public Map<String,String> regist(
             @RequestPart("data") RegisterProductDto registerProductDto,
-            @RequestPart("image") MultipartFile image
+            @RequestPart("image") MultipartFile image,
+            Authentication authentication
     ) throws IOException {
-        //! 나중에 멤버 아이디 값으로 변경
-        Long memberId = 1L;
-        return productService.regist(registerProductDto, image, memberId);
+        return productService.regist(registerProductDto, image, (Long)authentication.getPrincipal());
     }
 
     @PostMapping("/ai")

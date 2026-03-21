@@ -1,5 +1,7 @@
 package com.sh.Ram.product.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,7 +20,10 @@ public class RegisterProductDto {
     private String description; // 상품 설명
     private Integer price; // 상품 가격
     private Boolean isAuction; // 경매 여 / 부
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate auctionStartDate; // 경매 시작 날짜
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate auctionEndDate; // 경매 종료 날짜
 
     @Override
