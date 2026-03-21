@@ -1,4 +1,4 @@
-package com.sh.Ram.Auction.repository;
+package com.sh.Ram.auction.repository;
 
 import com.sh.Ram.entity.Auction;
 import com.sh.Ram.enums.AuctionStatus;

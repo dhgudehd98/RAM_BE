@@ -1,9 +1,9 @@
-package com.sh.Ram.Auction.controller;
+package com.sh.Ram.auction.controller;
 
-import com.sh.Ram.Auction.dto.AuctionCreateRequest;
-import com.sh.Ram.Auction.dto.AuctionDto;
-import com.sh.Ram.Auction.dto.AuctionUpdateRequest;
-import com.sh.Ram.Auction.service.AuctionService;
+import com.sh.Ram.auction.dto.AuctionCreateRequest;
+import com.sh.Ram.auction.dto.AuctionDto;
+import com.sh.Ram.auction.dto.AuctionUpdateRequest;
+import com.sh.Ram.auction.service.AuctionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

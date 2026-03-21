@@ -52,11 +52,18 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BidException.class)
-    public ResponseEntity<Map<String, String>> handleBid(BidException e) {
-        Map<String, String> res = new HashMap<>();
-        res.put("result", "N");
+    public ResponseEntity<Map<String, Object>> handleBid(BidException e) {
+
+        Map<String, Object> res = new HashMap<>();
         res.put("message", e.getMessage());
-        return ResponseEntity.badRequest().body(res);
+
+        // 가격 mismatch 시
+        if (e.getCurrentPrice() != null) {
+            res.put("currentPrice", e.getCurrentPrice());
+            res.put("nextBidPrice", e.getNextBidPrice());
+        }
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(res);
     }
 
     @ExceptionHandler(Exception.class)

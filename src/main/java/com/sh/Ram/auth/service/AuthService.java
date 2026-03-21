@@ -1,5 +1,7 @@
 package com.sh.Ram.auth.service;
 
+import com.sh.Ram.auth.dto.LoginRefreshResponseDto;
+import com.sh.Ram.auth.dto.LoginResponseDto;
 import com.sh.Ram.common.exception.member.MemberException;
 import com.sh.Ram.entity.Member;
 import com.sh.Ram.auth.dto.LoginRequestDto;
@@ -73,7 +75,8 @@ public class AuthService {
         response.addCookie(cookie);
 
         return ResponseEntity.ok(
-                Map.of("result", "Y", "message", "정상적으로 로그인이 완료되었습니다.", "token", accessToken));
+                new LoginResponseDto("Y", "정상적으로 로그인이 완료되었습니다.", accessToken, member.getNickname()));
+
     }
 
     public ResponseEntity<?> logout(Long memberId, HttpServletResponse response) throws AuthException {
@@ -95,12 +98,13 @@ public class AuthService {
 
     public ResponseEntity<?> refresh(HttpServletRequest request, HttpServletResponse response) throws AuthException {
         String refreshToken = getCookieValue(request, "refreshToken");
-        String accessToken = refreshAccessToken(refreshToken);
+        LoginRefreshResponseDto refreshDto = refreshAccessToken(refreshToken);
+        refreshDto.setResult("Y"); // accessToken에 대한 값이 정상적으로 재발급 되었을 때 result 값 설정
 
-        return ResponseEntity.ok(Map.of("result", "Y", "accessToken", accessToken));
+        return ResponseEntity.ok(refreshDto);
     }
 
-    private String refreshAccessToken(String refreshToken) throws AuthException {
+    private LoginRefreshResponseDto refreshAccessToken(String refreshToken) throws AuthException {
 
         Claims claims;
 
@@ -124,7 +128,10 @@ public class AuthService {
         // 쿠키로 전달 받은 RefreshToken에 대한 값과 Redis에 저장되어 있는 RefreshToken에 대한 값이 불일치시 오류 발생
         if (!refreshToken.equals(refreshTokenInRedis)) throw new AuthException("토큰에 대한 정보가 일치하지 않습니다.");
 
-        return jwtUtil.generateAccessToken(memberId, email);
+        String accessToken = jwtUtil.generateAccessToken(memberId, email);
+        String nickname = memberRepository.getReferenceById(memberId).getNickname();
+
+        return new LoginRefreshResponseDto(accessToken, nickname);
     }
 
 

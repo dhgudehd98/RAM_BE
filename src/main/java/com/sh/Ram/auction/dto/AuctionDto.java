@@ -1,4 +1,4 @@
-package com.sh.Ram.Auction.dto;
+package com.sh.Ram.auction.dto;
 
 import com.sh.Ram.entity.Auction;
 import com.sh.Ram.enums.AuctionStatus;
@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.checkerframework.checker.units.qual.N;
 
 import java.time.LocalDate;
 

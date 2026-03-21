@@ -1,9 +1,10 @@
-package com.sh.Ram.Auction.service;
+package com.sh.Ram.auction.service;
 
-import com.sh.Ram.Auction.dto.AuctionCreateRequest;
-import com.sh.Ram.Auction.dto.AuctionDto;
-import com.sh.Ram.Auction.dto.AuctionUpdateRequest;
-import com.sh.Ram.Auction.repository.AuctionRepository;
+import com.sh.Ram.auction.dto.AuctionCreateRequest;
+import com.sh.Ram.auction.dto.AuctionDto;
+import com.sh.Ram.auction.dto.AuctionUpdateRequest;
+import com.sh.Ram.auction.repository.AuctionRepository;
+import com.sh.Ram.bid.repository.BidRepository;
 import com.sh.Ram.common.exception.auction.AuctionException;
 import com.sh.Ram.entity.Auction;
 import com.sh.Ram.entity.Product;
@@ -12,8 +13,9 @@ import com.sh.Ram.enums.AuctionStatus;
 import com.sh.Ram.enums.NotificationType;
 import com.sh.Ram.notification.service.NotificationService;
 import com.sh.Ram.product.repository.ProductRepository;
+import com.sh.Ram.redis.auction.dto.AuctionRealtimeDto;
+import com.sh.Ram.redis.auction.service.AuctionRedisCacheService;
 import com.sh.Ram.wishList.repository.WishListRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -25,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +38,9 @@ public class AuctionService {
     private final WishListRepository wishListRepository;
 
     private final NotificationService notificationService;
+
+    private final AuctionRedisCacheService auctionRedisCacheService;
+    private final BidRepository bidRepository;
 
     @Transactional(readOnly = true)
     public Page<AuctionDto> auctionList(int page, String status) {
@@ -58,7 +64,24 @@ public class AuctionService {
         Auction auction = auctionRepository.findById(auctionId)
                 .orElseThrow(() -> new AuctionException("경매를 찾을 수 없습니다."));
 
-        return new AuctionDto(auction);
+        AuctionDto dto = new AuctionDto(auction);
+
+        // PROGRESS 상태면 Redis 실시간 가격 반영
+        if (auction.getAuctionStatus() == AuctionStatus.PROGRESS) {
+
+            auctionRedisCacheService.getAuctionState(auctionId)
+                    .ifPresent(state -> {
+
+                        dto.setCurrentPrice(state.getCurrentPrice());
+
+                        // 상태도 Redis 기준으로 업데이트
+                        dto.setAuctionStatus(
+                                AuctionStatus.valueOf(state.getAuctionStatus())
+                        );
+                    });
+        }
+
+        return dto;
     }
 
     @Transactional
@@ -80,7 +103,7 @@ public class AuctionService {
         Auction auction = new Auction();
         auction.setProduct(product);
         auction.setStartPrice(request.getStartPrice());
-        auction.setCurrentPrice(request.getStartPrice());
+        auction.setCurrentPrice(null);
         auction.setStartDate(request.getStartDate());
         auction.setEndDate(request.getEndDate());
         auction.setAuctionStatus(AuctionStatus.PENDING);

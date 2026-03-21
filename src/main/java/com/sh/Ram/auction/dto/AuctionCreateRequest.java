@@ -1,4 +1,4 @@
-package com.sh.Ram.Auction.dto;
+package com.sh.Ram.auction.dto;
 
 import lombok.Getter;
 import lombok.Setter;
