@@ -19,4 +19,9 @@ public interface BidRepository extends JpaRepository<Bid, Long> {
      * 최고 입찰가 조회
      */
     Optional<Bid> findTopByAuctionIdOrderByBidPriceDesc(Long auctionId);
+
+    /**
+     * 입찰 수 조회
+     */
+    long countByAuctionId(Long auctionId);
 }
