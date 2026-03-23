@@ -1,10 +1,17 @@
 package com.sh.Ram.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
+@Getter
+@Setter
 public class Account {
 
     @Id
@@ -15,16 +22,15 @@ public class Account {
     @OneToOne(mappedBy = "account")
     private Member member;
 
-    @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "adminAccount_id")
-    private AdminAccount adminAccount;
-
     private String accountNum;
 
-    private String accountName;
+    private Long accountBalance;
 
     private String bankCode;
 
     private String bankName;
+
+    @OneToMany(mappedBy = "account")
+    private List<AccountHistory> accountHistories = new ArrayList<>();
 
 }

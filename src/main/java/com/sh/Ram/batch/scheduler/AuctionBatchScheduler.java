@@ -17,8 +17,11 @@ import java.util.Properties;
 public class AuctionBatchScheduler {
 
     private final JobLauncher jobLauncher;
+
     private final Job auctionStartBulkJob;
     private final Job auctionEndBulkJob;
+    private final Job auctionResultJob;
+    private final Job settlementJob;
 
     /**
      * 경매 시작 배치
@@ -27,14 +30,9 @@ public class AuctionBatchScheduler {
     @Scheduled(cron = "0 0 0 * * *")
     public void runAuctionStartBatch() throws Exception {
 
-        JobParameters params = new JobParametersBuilder()
-                .addString("job", "auctionStartBulk")
-                .addLong("time", System.currentTimeMillis())
-                .toJobParameters();
-
         log.info("Auction Start Bulk Batch 실행");
 
-        jobLauncher.run(auctionStartBulkJob, params);
+        jobLauncher.run(auctionStartBulkJob, createParams("auctionStartBulk"));
     }
 
     /**
@@ -44,13 +42,43 @@ public class AuctionBatchScheduler {
     @Scheduled(cron = "0 0 0 * * *")
     public void runAuctionEndBatch() throws Exception {
 
-        JobParameters params = new JobParametersBuilder()
-                .addString("job", "auctionEndBulk")
-                .addLong("time", System.currentTimeMillis())
-                .toJobParameters();
-
         log.info("Auction End Bulk Batch 실행");
 
-        jobLauncher.run(auctionEndBulkJob, params);
+        jobLauncher.run(auctionEndBulkJob, createParams("auctionEndBulk"));
+    }
+
+    /**
+     * 경매 결과 배치 (낙찰 시 입금 처리 동시 진행)
+     * 매일 00시 05분
+     */
+    @Scheduled(cron = "0 5 0 * * *")
+    public void runAuctionResultBatch() throws Exception {
+
+        log.info("Auction Result Batch 실행");
+
+        jobLauncher.run(auctionResultJob, createParams("auctionResult"));
+    }
+
+    /**
+     * 출금 처리 배치
+     * 매일 00시 10분
+     * @throws Exception
+     */
+    @Scheduled(cron = "0 10 0 * * *")
+    public void runSettlementBatch() throws Exception {
+
+        log.info("Settlement Batch 실행");
+
+        jobLauncher.run(settlementJob, createParams("settlement"));
+    }
+
+    /**
+     * 공통 메서드 분리
+     */
+    private JobParameters createParams(String jobName) {
+        return new JobParametersBuilder()
+                .addString("job", jobName)
+                .addLong("time", System.currentTimeMillis())
+                .toJobParameters();
     }
 }
