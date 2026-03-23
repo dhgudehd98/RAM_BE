@@ -57,23 +57,20 @@ public class ProductController {
         return productService.getProductInfo(image).block();
     }
 
-    @GetMapping("{id}")
-    public String productDetail(
-            @PathVariable Long id,
-            Model model
+    @GetMapping("/detail")
+    @ResponseBody
+    public ProductDto productDetail(
+            @RequestParam Long productId
     ){
-        ProductDto productDto = productService.getProductDetail(id);
-        model.addAttribute("product", productDto);
-
-        return "product/productDetail";
+        return  productService.getProductDetail(productId);
     }
 
-    @PostMapping("/wishList/{id}")
+    @PostMapping("/wishList")
     @ResponseBody
     public Map<String, Object> addWishList(
-            @PathVariable("id") Long productId
+            @RequestParam Long productId,
+            Authentication authentication
     ) {
-        Long memberId = 1L;
-        return productService.addWishList(productId, memberId);
+        return productService.addWishList(productId, (Long)authentication.getPrincipal());
     }
 }
