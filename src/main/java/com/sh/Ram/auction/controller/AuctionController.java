@@ -20,17 +20,14 @@ public class AuctionController {
     private final AuctionService auctionService;
 
     @GetMapping("/list")
-    public String auctionList(
+    @ResponseBody
+    public Page<AuctionDto> auctionList(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(name = "status", required = false) String status,
-            Model model
+            @RequestParam(required = false) String sort,
+            @RequestParam(name = "status", required = false) String status
     ) {
-
-        Page<AuctionDto> auctions = auctionService.auctionList(page, status);
-
-        model.addAttribute("auctions", auctions);
-        model.addAttribute("status", status);
-        return "auction/auctionList";
+        log.info("=== 경매 상품 리스트 요청 ===");
+        return auctionService.auctionList(page, sort, status);
     }
 
     @PostMapping("{id}")
