@@ -135,18 +135,18 @@ public class AuthService {
     }
 
 
-    private String getCookieValue(HttpServletRequest request, String cookieName) {
+    private String getCookieValue(HttpServletRequest request, String cookieName) throws AuthException {
         Cookie[] cookies = request.getCookies();
 
         if (cookies == null) {
-            throw new IllegalArgumentException("쿠키가 존재하지 않습니다.");
+            throw new AuthException("쿠키가 존재하지 않습니다.");
         }
 
         for (Cookie cookie : cookies) {
             if(cookieName.equals(cookie.getName())) return cookie.getValue();
         }
 
-        throw new IllegalArgumentException("쿠키를 찾을 수 없습니다.");
+        throw new AuthException("쿠키를 찾을 수 없습니다.");
     }
 
     public boolean duplicationNickName(String nickName) {
