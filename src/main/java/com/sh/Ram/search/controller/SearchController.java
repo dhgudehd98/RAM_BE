@@ -26,15 +26,11 @@ public class SearchController {
 
     // 상품 / 브랜드 검색
     @GetMapping("/result")
-    public String searchByKeyword(
-            @RequestParam(required = false) String keyword,
-            Model model)
+    @ResponseBody
+    public List<ProductDto> searchByKeyword(
+            @RequestParam(required = false) String keyword)
     {
-        List<ProductDto> products = searchService.searchByKeyword(keyword);
-
-        model.addAttribute("keyword", keyword);
-        model.addAttribute("products", products);
-        return "search/result";
+        return  searchService.searchByKeyword(keyword);
     }
 
 //    @GetMapping("/result")

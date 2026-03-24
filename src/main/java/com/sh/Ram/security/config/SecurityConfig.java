@@ -43,7 +43,9 @@ public class SecurityConfig {
                                 "/auction/**",
                                 "/product/wishList/**",
                                 "/api/**",
-                                "/product/{id}",
+                                "/product/list",
+                                "/product",
+                                "/product/detail",
                                 "/notification/subscribe",
                                 "/css/**",
                                 "/js/**"
