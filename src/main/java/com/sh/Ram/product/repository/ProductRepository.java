@@ -17,7 +17,7 @@ import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    @Query(value = "SELECT p FROM Product p JOIN FETCH p.brand b ",
+    @Query(value = "SELECT p FROM Product p JOIN FETCH p.brand b WHERE p.onSale = false",
             countQuery = "SELECT count(p) FROM Product p")
     Page<Product> findAll(Pageable pageable);
 
