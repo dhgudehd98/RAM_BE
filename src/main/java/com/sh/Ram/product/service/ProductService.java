@@ -75,7 +75,8 @@ public class ProductService {
                 registerProductDto.getDescription(),
                 registerProductDto.getPrice(),
                 // 카테고리 , 브랜드 추가해서 상품 만들기
-                imageUrl
+                imageUrl,
+                false
         );
 
         productRepository.save(product);
