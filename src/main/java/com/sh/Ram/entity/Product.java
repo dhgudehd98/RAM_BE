@@ -43,6 +43,10 @@ public class Product {
 
     private Integer price;
 
+    // 경매 마감되면 상품에 대한 값 노출 x
+    @Column(nullable = false)
+    private boolean onSale = false;
+
     @OneToMany(mappedBy = "product")
     private List<WishList> wishList = new ArrayList<>();
 
