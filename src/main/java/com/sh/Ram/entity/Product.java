@@ -62,12 +62,13 @@ public class Product {
         this.imageUrl = imageUrl;
     }
 
-    public Product(Member member, String name, String description, Integer price, String imageUrl) {
+    public Product(Member member, String name, String description, Integer price, String imageUrl, boolean onSale) {
         this.member = member;
         this.name = name;
         this.description = description;
         this.price = price;
         this.imageUrl = imageUrl;
+        this.onSale = onSale;
     }
 
 
