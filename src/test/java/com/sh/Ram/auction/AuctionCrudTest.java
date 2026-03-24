@@ -118,7 +118,7 @@ public class AuctionCrudTest {
 
 
         // 5️⃣ 리스트 조회
-        Page<AuctionDto> page = auctionService.auctionList(0, null);
+        Page<AuctionDto> page = auctionService.auctionList(0, null,null);
 
         System.out.println("===== AUCTION PAGE =====");
         System.out.println("total elements = " + page.getTotalElements());

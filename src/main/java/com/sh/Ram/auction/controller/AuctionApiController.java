@@ -36,9 +36,10 @@ public class AuctionApiController {
     @GetMapping("/list")
     public Page<AuctionDto> getAuctionList(
             @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) String sort,
             @RequestParam(required = false) String status
     ) {
-        return auctionService.auctionList(page, status);
+        return auctionService.auctionList(page, sort,status);
     }
 
     /**

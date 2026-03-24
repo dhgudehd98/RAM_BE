@@ -43,9 +43,18 @@ public class AuctionService {
     private final BidRepository bidRepository;
 
     @Transactional(readOnly = true)
-    public Page<AuctionDto> auctionList(int page, String status) {
-        Pageable pageable = PageRequest.of(page, 10, Sort.by("startDate").descending());
+    public Page<AuctionDto> auctionList(int page, String sort,  String status) {
+        Pageable pageable;
         Page<Auction> auctionList ;
+        log.info("정렬 AuctionService In auctionList");
+        log.info("sort : " + sort);
+        if (sort != null) {
+            log.info("정렬 : " + sort);
+            pageable = PageRequest.of(page, 10, Sort.by(sort).descending());
+        }
+        else{
+            pageable = PageRequest.of(page, 10, Sort.by("startDate").ascending());
+        }
 
         // status에 대한 부분이 없으면 전체 조회
         if (status == null) {
