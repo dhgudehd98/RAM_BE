@@ -1,11 +1,15 @@
 package com.sh.Ram.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Setter
+@Getter
 public class AdminAccount {
 
     @Id
@@ -14,12 +18,7 @@ public class AdminAccount {
     private Long id;
 
     @OneToMany(mappedBy = "adminAccount")
-    private List<Account> accounts = new ArrayList<>();
+    private List<AuctionResult> auctionResults = new ArrayList<>();
 
-    @OneToOne(mappedBy = "adminAccount")
-    private AuctionResult auctionResult;
-
-    private Integer amount;
-
-    private String status;
+    private Long balance;
 }

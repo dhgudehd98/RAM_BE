@@ -46,8 +46,7 @@ public class Auction {
     @OneToMany(mappedBy = "auction")
     private List<Notification> notifications = new ArrayList<>();
 
-    @OneToOne(fetch = LAZY)
-    @JoinColumn(name = "auctionResult_id")
+    @OneToOne(mappedBy = "auction", fetch = LAZY)
     private AuctionResult auctionResult;
 
     @OneToMany(mappedBy = "auction")
@@ -71,5 +70,15 @@ public class Auction {
         this.startDate = startDate;
         this.endDate = endDate;
         this.auctionStatus = auctionStatus;
+    }
+
+    /**
+     * 양방향 편의 메서드
+     * @param result
+     * AuctionResult 등록 시 Auction도 등록
+     */
+    public void setAuctionResult(AuctionResult result) {
+        this.auctionResult = result;
+        result.setAuction(this);
     }
 }
