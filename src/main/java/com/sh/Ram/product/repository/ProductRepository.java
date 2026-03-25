@@ -15,7 +15,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public interface ProductRepository extends JpaRepository<Product, Long> {
+
+@Repository
+public interface ProductRepository extends JpaRepository<Product, Long>, ProductRepositoryQuery {
 
     @Query(value = "SELECT p FROM Product p JOIN FETCH p.brand b WHERE p.onSale = false",
             countQuery = "SELECT count(p) FROM Product p")
