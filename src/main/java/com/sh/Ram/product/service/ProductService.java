@@ -29,8 +29,10 @@ import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -150,5 +152,12 @@ public class ProductService {
                 "isWished", existing.isEmpty(),
                 "wishListSize", wishListRepoistory.countByProductId(productId)
         );
+    }
+
+    public List<ProductDto> findAllProduct(Long lastId, String sort) {
+        return productRepository.findAllProduct(lastId, sort)
+                .stream()
+                .map(ProductDto::from)
+                .collect(Collectors.toList());
     }
 }

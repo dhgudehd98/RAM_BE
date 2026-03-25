@@ -29,13 +29,22 @@ public class ProductController {
 
     private final ProductService productService;
 
+//    @GetMapping("/list")
+//    @ResponseBody
+//    public Page<ProductDto> findAllProduct(
+//            @RequestParam(required = false) String sort,
+//            @RequestParam(defaultValue = "0") int page
+//    ) {
+//         return productService.findAllProduct(sort, page);
+//    }
+
     @GetMapping("/list")
     @ResponseBody
-    public Page<ProductDto> findAllProduct(
+    public List<ProductDto> findAllProduct (
             @RequestParam(required = false) String sort,
-            @RequestParam(defaultValue = "0") int page
+            @RequestParam(required = false) Long lastId
     ) {
-         return productService.findAllProduct(sort, page);
+        return productService.findAllProduct(lastId, sort);
     }
 
     @PostMapping("/regist")

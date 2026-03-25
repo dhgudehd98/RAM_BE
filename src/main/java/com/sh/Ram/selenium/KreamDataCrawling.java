@@ -113,7 +113,7 @@ public class KreamDataCrawling  {
                     }
 
                     String description = "후드티입니다 기모입니다.";
-                    Product product = new Product(member, name, description, priceInt, imageUrl);
+                    Product product = new Product(member, name, description, priceInt, imageUrl, false);
                     productRepository.save(product);
 
                     System.out.println("저장완료 - 브랜드 : " + brand + " 상품명 : " + name + " 가격 : " + priceInt);
