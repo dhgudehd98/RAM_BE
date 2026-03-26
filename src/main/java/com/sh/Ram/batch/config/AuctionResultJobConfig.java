@@ -1,11 +1,13 @@
 package com.sh.Ram.batch.config;
 
+import com.sh.Ram.adminAccount.repository.AdminAccountRepository;
 import com.sh.Ram.auction.repository.AuctionRepository;
 import com.sh.Ram.auctionResult.repository.AuctionResultRepository;
 import com.sh.Ram.auctionResult.service.AuctionResultService;
 import com.sh.Ram.bid.repository.BidRepository;
 import com.sh.Ram.common.exception.auctionResult.AuctionResultException;
 import com.sh.Ram.entity.*;
+import com.sh.Ram.product.repository.ProductRepository;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
@@ -14,6 +16,7 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.database.JpaItemWriter;
 import org.springframework.batch.item.database.JpaPagingItemReader;
 import org.springframework.context.annotation.Bean;
@@ -34,6 +37,8 @@ public class AuctionResultJobConfig {
     private final BidRepository bidRepository;
     private final AuctionResultRepository auctionResultRepository;
     private final AuctionResultService auctionResultService;
+    private final AdminAccountRepository adminAccountRepository;
+    private final ProductRepository productRepository;
 
     @Bean
     public Job auctionResultJob(EntityManagerFactory emf) {
@@ -48,7 +53,7 @@ public class AuctionResultJobConfig {
                 .<Auction, AuctionResult> chunk(50, transactionManager)
                 .reader(auctionResultReader(emf))
                 .processor(auctionResultProcessor())
-                .writer(auctionResultWriter(emf))
+                .writer(auctionResultWriter())
                 .build();
     }
 
@@ -62,6 +67,7 @@ public class AuctionResultJobConfig {
 
         reader.setQueryString("""
                 SELECT a FROM Auction a
+                JOIN FETCH a.product
                 WHERE a.auctionStatus = 'CLOSED'
                 AND a.auctionResult IS NULL
                 """);
@@ -80,6 +86,9 @@ public class AuctionResultJobConfig {
 
                 AuctionResult result = new AuctionResult();
 
+                // Auction 연결
+                result.setAuction(auction);
+
                 /**
                  * 유찰
                  */
@@ -88,8 +97,6 @@ public class AuctionResultJobConfig {
                     result.setSettlementStatus("NONE");
                     result.setBidCount(0);
                     result.setResultTime(LocalDateTime.now());
-
-                    auction.setAuctionResult(result);
 
                     return result;
                 }
@@ -100,22 +107,15 @@ public class AuctionResultJobConfig {
                 Bid topBid = topBidOpt.get();
 
                 Long buyerId = topBid.getMember().getId();
-                Long price = Long.valueOf(topBid.getBidPrice());
-
-                /**
-                 * 입금 처리
-                 */
-                auctionResultService.processIn(buyerId, price);
 
                 result.setBuyerId(buyerId);
                 result.setFinalPrice(topBid.getBidPrice());
                 result.setBidCount((int) bidRepository.countByAuctionId(auction.getId()));
                 result.setResultStatus("SUCCESS");
                 result.setSettlementStatus("HELD");
+                result.setAdminAccount(adminAccountRepository.findById(1L));
 
                 result.setResultTime(LocalDateTime.now());
-
-                auction.setAuctionResult(result);
 
                 return result;
             } catch (Exception e) {
@@ -125,11 +125,28 @@ public class AuctionResultJobConfig {
     }
 
     @Bean
-    public JpaItemWriter<AuctionResult> auctionResultWriter(EntityManagerFactory emf) {
+    public ItemWriter<AuctionResult> auctionResultWriter() {
 
-        JpaItemWriter<AuctionResult> writer = new JpaItemWriter<>();
-        writer.setEntityManagerFactory(emf);
+        return items -> {
+            for (AuctionResult result : items) {
 
-        return writer;
+                Auction auction = result.getAuction();
+
+                if ("SUCCESS".equals(result.getResultStatus())) {
+                    auctionResultService.processIn(
+                            result.getBuyerId(),
+                            Long.valueOf(result.getFinalPrice())
+                    );
+                }
+
+                auctionResultRepository.save(result);
+
+                Product product = auction.getProduct();
+                product.setOnSale(true);
+
+                productRepository.save(product);
+
+            }
+        };
     }
 }

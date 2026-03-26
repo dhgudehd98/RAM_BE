@@ -11,6 +11,7 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.database.JpaItemWriter;
 import org.springframework.batch.item.database.JpaPagingItemReader;
 import org.springframework.context.annotation.Bean;
@@ -44,7 +45,7 @@ public class SettlementJobConfig {
                 .<AuctionResult, AuctionResult>chunk(50, transactionManager)
                 .reader(settlementReader(emf))
                 .processor(settlementProcessor())
-                .writer(settlementWriter(emf))
+                .writer(settlementWriter())
                 .build();
     }
 
@@ -58,6 +59,9 @@ public class SettlementJobConfig {
 
         reader.setQueryString("""
                 SELECT r FROM AuctionResult r
+                JOIN FETCH r.auction a
+                JOIN FETCH a.product p
+                JOIN FETCH p.member
                 WHERE r.settlementStatus = 'HELD'
                 AND r.resultTime < :todayStart
                 """);
@@ -74,15 +78,6 @@ public class SettlementJobConfig {
     public ItemProcessor<AuctionResult, AuctionResult> settlementProcessor() {
 
         return result -> {
-
-            Long sellerId = result.getAuction().getProduct().getMember().getId();
-            Long price = Long.valueOf(result.getFinalPrice());
-
-            /**
-             * 출금 처리
-             */
-            auctionResultService.processOut(sellerId, price);
-
             /**
              *  판매자에게 입금 완료 시 상태 변경 (HELD -> SETTLED)
              */
@@ -93,11 +88,30 @@ public class SettlementJobConfig {
     }
 
     @Bean
-    public JpaItemWriter<AuctionResult> settlementWriter(EntityManagerFactory emf) {
+    public ItemWriter<AuctionResult> settlementWriter() {
 
-        JpaItemWriter<AuctionResult> writer = new JpaItemWriter<>();
-        writer.setEntityManagerFactory(emf);
+        return items -> {
 
-        return writer;
+            for (AuctionResult result : items) {
+
+                Long sellerId = result.getAuction()
+                        .getProduct()
+                        .getMember()
+                        .getId();
+
+                Long price = Long.valueOf(result.getFinalPrice());
+
+                if (!"SETTLED".equals(result.getResultStatus())) {
+
+                    // 출금 처리
+                    auctionResultService.processOut(sellerId, price);
+
+                }
+
+                result.setSettlementStatus("SETTLED");
+
+                auctionResultRepository.save(result);
+            }
+        };
     }
 }
