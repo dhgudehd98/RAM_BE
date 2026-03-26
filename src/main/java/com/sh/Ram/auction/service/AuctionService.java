@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -46,10 +47,8 @@ public class AuctionService {
     public Page<AuctionDto> auctionList(int page, String sort,  String status) {
         Pageable pageable;
         Page<Auction> auctionList ;
-        log.info("정렬 AuctionService In auctionList");
-        log.info("sort : " + sort);
+
         if (sort != null) {
-            log.info("정렬 : " + sort);
             pageable = PageRequest.of(page, 10, Sort.by(sort).descending());
         }
         else{
@@ -64,7 +63,14 @@ public class AuctionService {
             auctionList = auctionRepository.findAuctionByStatus(pageable, auctionStatus);
         }
 
-        return auctionList.map(AuctionDto::new);
+        return auctionList.map(auction -> new AuctionDto(auction));
+    }
+
+    public List<AuctionDto> auctionList(Long lastId, String sort, String status) {
+        return auctionRepository.findAll(lastId, sort, status)
+                .stream()
+                .map(auction -> new AuctionDto(auction))
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)

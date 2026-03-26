@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -19,15 +20,25 @@ public class AuctionController {
 
     private final AuctionService auctionService;
 
+//    @GetMapping("/list")
+//    @ResponseBody
+//    public Page<AuctionDto> auctionList(
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(required = false) String sort,
+//            @RequestParam(name = "status", required = false) String status
+//    ) {
+//        log.info("=== 경매 상품 리스트 요청 ===");
+//        return auctionService.auctionList(page, sort, status);
+//    }
+
     @GetMapping("/list")
     @ResponseBody
-    public Page<AuctionDto> auctionList(
-            @RequestParam(defaultValue = "0") int page,
+    public List<AuctionDto> auctionList(
+            @RequestParam(required = false) Long lastId,
             @RequestParam(required = false) String sort,
             @RequestParam(name = "status", required = false) String status
     ) {
-        log.info("=== 경매 상품 리스트 요청 ===");
-        return auctionService.auctionList(page, sort, status);
+        return auctionService.auctionList(lastId, sort, status);
     }
 
     @PostMapping("{id}")
