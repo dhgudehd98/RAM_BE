@@ -49,7 +49,7 @@ public class SearchService {
 
         List<ProductDocument> documents = productDocumentRepository.searchByKeyword(keyword);
         List<Long> productIds = documents.stream()
-                .map(document -> Long.parseLong(document.getId()))
+                .map(document -> document.getId())
                 .collect(Collectors.toList());
 
         Map<Long, AuctionStatus> auctionMap = auctionRepository
@@ -64,7 +64,7 @@ public class SearchService {
                 .stream()
                 .map(document -> {
                     ProductDto productDto = new ProductDto(document);
-                    productDto.setAuctionStatus(auctionMap.get(Long.parseLong(document.getId())));
+                    productDto.setAuctionStatus(auctionMap.get(document.getId()));
                     return productDto;
                 })
                 .collect(Collectors.toList());

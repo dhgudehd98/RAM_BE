@@ -48,7 +48,7 @@ public class ProductDto {
     }
 
     public ProductDto(ProductDocument document) {
-        this.id = Long.parseLong(document.getId());
+        this.id = document.getId();
         this.name = document.getName();
         this.brand = document.getBrand();
         this.price = document.getPrice();

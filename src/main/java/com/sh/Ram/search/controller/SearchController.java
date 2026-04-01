@@ -58,9 +58,4 @@ public class SearchController {
        return searchService.getKeywordRanking();
     }
 
-    @GetMapping("")
-    public String main() {
-        return "search/search";
-    }
-
 }

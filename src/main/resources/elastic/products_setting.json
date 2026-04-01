@@ -8,24 +8,51 @@
           "user_dictionary_rules": ["아이앱", "스투시"]
         }
       },
+      // 상품 저장 인덱스 필터 값 설정 -> 동의어에 대한 부분은 브랜드명 , 상품명에 대한 부분으로 설정하고 상품 외관(색, 카테고리)에 대한 부분은 검색어 필터에서 동의어 적용
+      // 상품에 대한 index를 저장하는 부분에서는 동의어에 대한 값이 필요할수 있진 않지만, 상품을 저장할 때 인덱싱이 잘못된 방향으로 저장될 수 있기 때문에 설정
+      // 예시 -> stussy 저장 할 때 nori에서 s,t,u,s,s,y <와 같이 저장 할 수 있기 때문에
       "filter": {
-        "products_synonym_filter": {
+        "products_index_synonym_filter": {
+          "type": "synonym",
+          "synonyms": [
+            "iab, 아이앱",
+            "studio, 스튜디오, 스투디오",
+            "stussy, 스투시, 스튜시",
+            "nike, 나이키",
+            "palace , 팔라스",
+            "supreme, 슈프림"
+          ]
+        },
+        "products_search_synonym_filter": {
           "type": "synonym_graph",
           "synonyms": [
             "iab, 아이앱",
             "studio, 스튜디오, 스투디오",
-            "stussy, 스투시, 스튜시"
+            "stussy, 스투시, 스튜시",
+            "블랙, 검정, 검정색, black",
+            "화이트, 흰색, 하얀색, white",
+            "후드, 후드티, 후디, hoodie",
+            "스니커즈, 운동화, 스니커"
           ]
         }
       },
       "analyzer": {
-        "products_name_analyzer": {
+        "products_index_analyzer": {
           "type": "custom",
           "tokenizer": "nori_user_dict",
           "filter": [
             "lowercase",
             "nori_readingform",
-            "products_synonym_filter"
+            "products_index_synonym_filter"
+          ]
+        },
+        "products_search_analyzer": {
+          "type": "custom",
+          "tokenizer": "nori_user_dict",
+          "filter": [
+            "lowercase",
+            "nori_readingform",
+            "products_search_synonym_filter"
           ]
         }
       }
@@ -33,16 +60,20 @@
   },
   "mappings": {
     "properties": {
-      "id": { "type": "keyword" },
+      "id": { "type": "long" },
       "memberId": { "type": "long" },
       "name": {
         "type": "text",
-        "analyzer": "products_name_analyzer"
+        "analyzer": "products_index_analyzer",
+        "search_analyzer": "products_search_analyzer"
       },
       "brand": {
         "type": "text",
-        "analyzer": "products_name_analyzer"
+        "analyzer": "products_index_analyzer",
+        "search_analyzer": "products_search_analyzer"
       },
+      "category": { "type": "keyword" },
+      "tags": { "type": "keyword" },
       "price": { "type": "integer" },
       "imageUrl": { "type": "keyword", "index": false }
     }
