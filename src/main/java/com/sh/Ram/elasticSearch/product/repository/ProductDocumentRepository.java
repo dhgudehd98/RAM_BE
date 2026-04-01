@@ -32,12 +32,19 @@ public interface ProductDocumentRepository extends ElasticsearchRepository<Produ
      *  name : 여기에서는 [stussy , 스투시, 스튜시]를 제외하고 남은 검색어 조각 "스튜" , "시"에서 하나 더 일치해야함.
      */
     @Query("{" +
-            "\"multi_match\": {" +
-            "\"query\": \"?0\"," +
-            "\"type\": \"best_fields\"," +
-            "\"fields\": [\"brand^50\", \"name^1\"]," +
-            "\"minimum_should_match\": \"70%\"," +
-            "\"fuzziness\": \"AUTO\"" +
+            "\"bool\": {" +
+            "  \"should\": [" +
+            "    {\"multi_match\": {" +
+            "      \"query\": \"?0\"," +
+            "      \"type\": \"best_fields\"," +
+            "      \"fields\": [\"brand^50\", \"name^10\"]," +
+            "      \"minimum_should_match\": \"70%\"," +
+            "      \"fuzziness\": \"AUTO\"" +
+            "    }}," +
+            "    {\"match\": {" +
+            "      \"tags\": {\"query\": \"?0\", \"boost\": 5}" +
+            "    }}" +
+            "  ]" +
             "}" +
             "}")
     List<ProductDocument> searchByKeyword(String keyword);
