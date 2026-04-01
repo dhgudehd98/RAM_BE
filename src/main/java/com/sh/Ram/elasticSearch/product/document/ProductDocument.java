@@ -10,6 +10,9 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Setting;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Document(indexName = "products")
 @Setting(settingPath = "classpath:elastic/products_setting.json")
 @AllArgsConstructor
@@ -20,11 +23,15 @@ import org.springframework.data.elasticsearch.annotations.Setting;
 public class ProductDocument {
 
     @Id
-    private String id;
+    private Long id;
     private Long memberId;
     private String name;
     private String brand;
     private Integer price;
     private String imageUrl;
+    private String category;
+    private List<String> tags = new ArrayList<>();
+
+
 
 }

@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -25,18 +26,29 @@ public class SaveElasticSearch  {
     @Transactional
     public void run() {
         List<Product> products = repository.findAll();
-
+        List<String> list = new ArrayList<>();
+        list.add("운동화");
+        list.add("스니커즈");
+        int count = 1;
         for (Product product : products) {
-            Long memberId = 1L;
+
+            if(count == 301) break;
+
+            Long memberId = 4L;
             ProductDocument document = new ProductDocument(
-                    String.valueOf(product.getId()),
+                    product.getId(),
                     memberId,
                     product.getName(),
                     product.getBrand().getBrandName(),
                     product.getPrice(),
-                    product.getImageUrl());
+                    product.getImageUrl(),
+                    String.valueOf(product.getCategory()),
+                    list
 
+            );
             documentRepository.save(document);
+
+            count ++;
         }
     }
 }
