@@ -36,10 +36,10 @@ public interface ProductDocumentRepository extends ElasticsearchRepository<Produ
             "  \"should\": [" +
             "    {\"multi_match\": {" +
             "      \"query\": \"?0\"," +
-            "      \"type\": \"best_fields\"," +
-            "      \"fields\": [\"brand^50\", \"name^10\"]," +
-            "      \"minimum_should_match\": \"70%\"," +
-            "      \"fuzziness\": \"AUTO\"" +
+            "      \"type\": \"cross_fields\"," +
+            "      \"fields\": [\"brand^100\", \"name^10\"]," +
+            "      \"minimum_should_match\": \"70%\"," +  // 쉼표 추가
+            "      \"operator\": \"or\"" +
             "    }}," +
             "    {\"match\": {" +
             "      \"tags\": {\"query\": \"?0\", \"boost\": 5}" +
