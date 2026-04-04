@@ -54,6 +54,8 @@ public class ProductController {
             @RequestPart("image") MultipartFile image,
             Authentication authentication
     ) throws IOException {
+        log.info("==== 상품 등록 정보 ====");
+        log.info(registerProductDto.toString());
         return productService.regist(registerProductDto, image, (Long)authentication.getPrincipal());
     }
 

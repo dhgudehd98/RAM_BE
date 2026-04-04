@@ -44,7 +44,6 @@ public class SaveElasticSearch  {
                     product.getImageUrl(),
                     String.valueOf(product.getCategory()),
                     list
-
             );
             documentRepository.save(document);
 

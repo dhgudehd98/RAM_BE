@@ -15,6 +15,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class RegisterProductDto {
     private String productName; // 상품명
+    private Long brandId;
     private String brandName; // 브랜드명
     private String category; // 카테고리
     private String description; // 상품 설명
@@ -30,6 +31,7 @@ public class RegisterProductDto {
     public String toString() {
         return "RegisterProductDto{" +
                 "productName='" + productName + '\'' +
+                ", brandId='" + brandId + '\'' +
                 ", brandName='" + brandName + '\'' +
                 ", category='" + category + '\'' +
                 ", description='" + description + '\'' +

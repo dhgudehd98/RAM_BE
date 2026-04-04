@@ -48,7 +48,8 @@ public class SecurityConfig {
                                 "/product/detail",
                                 "/notification/subscribe",
                                 "/css/**",
-                                "/js/**"
+                                "/js/**",
+                                "/brand"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

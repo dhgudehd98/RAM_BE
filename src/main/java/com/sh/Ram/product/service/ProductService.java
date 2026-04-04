@@ -3,7 +3,10 @@ package com.sh.Ram.product.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sh.Ram.auction.repository.AuctionRepository;
 import com.sh.Ram.aws.service.S3Service;
+import com.sh.Ram.brand.repository.BrandRepository;
 import com.sh.Ram.common.exception.member.MemberException;
+import com.sh.Ram.elasticSearch.product.document.ProductDocument;
+import com.sh.Ram.elasticSearch.product.repository.ProductDocumentRepository;
 import com.sh.Ram.entity.*;
 import com.sh.Ram.enums.AuctionStatus;
 import com.sh.Ram.member.repository.MemberRepository;
@@ -28,10 +31,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,6 +42,10 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final MemberRepository memberRepository;
     private final AuctionRepository auctionRepository;
+    private final BrandRepository brandRepository;
+
+    //ES
+    private final ProductDocumentRepository productDocumentRepository;
     private final WishListRepository wishListRepoistory;
     private final WebClient webClient;
     private final S3Service s3service;
@@ -67,21 +71,42 @@ public class ProductService {
     public Map<String, String> regist(RegisterProductDto registerProductDto, MultipartFile image, Long memberId) throws IOException {
         Map<String, String> response = new HashMap<>();
 
+        //! 태그에 대한 값 임시 추가
+        List<String> tags = new ArrayList<>();
+        tags.add("반팔, 반팔티, 상의");
+
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new MemberException("존재하지 않는 회원입니다. 로그인을 먼저 진행 후 상품을 등록해주세요."));
+        Brand brand = brandRepository.getReferenceById(registerProductDto.getBrandId());
         String imageUrl = s3service.imageUpload(image);
 
-        //! 상품 -> 브랜드에 대한 부분도 해야되는데 이걸 어떻게 해야되지 .. 미리 브랜드를 등록을 해놔야되나 DB + ES에다가
         Product product = new Product(
                 member,
                 registerProductDto.getProductName(),
+                brand,
                 registerProductDto.getDescription(),
                 registerProductDto.getPrice(),
-                // 카테고리 , 브랜드 추가해서 상품 만들기
                 imageUrl,
                 false
         );
 
-        productRepository.save(product);
+        Product result = productRepository.save(product);
+
+        // 상품 등록할 때 DB 저장 + ES 저장
+        ProductDocument document = new ProductDocument(
+                product.getId(),
+                memberId,
+                product.getName(),
+                product.getBrand().getBrandName(),
+                product.getPrice(),
+                product.getImageUrl(),
+                String.valueOf(product.getCategory()),
+                tags
+        );
+
+        if (result != null) {
+            productDocumentRepository.save(document);
+        }
+
 
         // 경매를 바로 올릴 상품이라면 -> Auction Entity에 저장
         //! ProductService에서 처리할 부분이 아닌 AuctionService에서 처리하도록 로직 변경 처리 필요
