@@ -66,4 +66,8 @@ public class Member extends BaseEntity {
     public void registerAccount(Account account) {
         this.account = account;
     }
+
+    public void deleteAccount() {
+        this.account = null;
+    }
 }

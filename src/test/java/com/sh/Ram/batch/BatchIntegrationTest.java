@@ -107,11 +107,11 @@ public class BatchIntegrationTest {
         Long bidder2 = members.get(1).getId();
 
         // 초기 잔액 저장
-        Account buyerBefore =
-                accountRepository.findByMemberId(bidder1);
+        Account buyerBefore = accountRepository.findByMemberId(bidder1)
+                        .orElseThrow(() -> new IllegalArgumentException("계좌 정보 없음"));
 
-        Account sellerBefore =
-                accountRepository.findByMemberId(product.getMember().getId());
+        Account sellerBefore = accountRepository.findByMemberId(product.getMember().getId())
+                .orElseThrow(() -> new IllegalArgumentException("계좌 정보 없음"));
 
         AdminAccount adminBefore =
                 adminAccountRepository.findById(1L);
@@ -155,7 +155,8 @@ public class BatchIntegrationTest {
 
         // buyer 확인
         Account buyerAfter =
-                accountRepository.findByMemberId(result.getBuyerId());
+                accountRepository.findByMemberId(result.getBuyerId())
+                        .orElseThrow(() -> new IllegalArgumentException("회원 정보 없음"));
 
         AdminAccount adminAfter =
                 adminAccountRepository.findById(1L);
@@ -194,8 +195,8 @@ public class BatchIntegrationTest {
 
         assertEquals("SETTLED", updated.getSettlementStatus());
 
-        Account sellerAfter =
-                accountRepository.findByMemberId(product.getMember().getId());
+        Account sellerAfter = accountRepository.findByMemberId(product.getMember().getId())
+                .orElseThrow(() -> new IllegalArgumentException("계좌 정보 없음"));
 
         AdminAccount adminFinal =
                 adminAccountRepository.findById(1L);
