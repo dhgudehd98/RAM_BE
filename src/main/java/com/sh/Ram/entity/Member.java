@@ -58,4 +58,12 @@ public class Member extends BaseEntity {
         this.phone = loginRequestDto.getPhone();
         this.password = password;
     }
+
+    public void verifyAccount() {
+        this.isAccount = true;
+    }
+
+    public void registerAccount(Account account) {
+        this.account = account;
+    }
 }
