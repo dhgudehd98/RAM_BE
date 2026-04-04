@@ -89,6 +89,33 @@ public class AccountService {
     }
 
     /**
+     * 계좌 삭제
+     * @param memberId
+     * @return
+     */
+    @Transactional
+    public Map<String, String> deleteAccount(Long memberId) {
+
+        Account account = accountRepository.findByMemberId(memberId)
+                .orElseThrow(() -> new AccountException("계좌가 존재하지 않습니다."));
+
+        // 잔액 체크
+        if (account.getAccountBalance() > 0) {
+            throw new AccountException("잔액이 남아있는 계좌는 삭제할 수 없습니다.");
+        }
+
+        Member member = account.getMember();
+        member.deleteAccount();
+
+        accountRepository.delete(account);
+
+        return Map.of(
+                "result", "Y",
+                "msg", "성공적으로 계좌가 삭제되었습니다."
+        );
+    }
+
+    /**
      * 계좌번호 형식 통일 메소드
      * @param account
      * @return 공백없는 문자열

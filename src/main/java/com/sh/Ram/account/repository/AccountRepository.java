@@ -17,7 +17,7 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     Account findByMemberIdWithLock(@Param("id") Long id);
 
     @Query("SELECT a From Account a WHERE a.member.id = :id")
-    Account findByMemberId(@Param("id") Long id);
+    Optional<Account> findByMemberId(@Param("id") Long id);
 
     @Query("""
         select new com.sh.Ram.account.dto.AccountDto(

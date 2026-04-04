@@ -48,4 +48,12 @@ public class AccountController {
 
         return accountService.registerAccount(memberId, req);
     }
+
+    @DeleteMapping("/delete")
+    public Map<String, String> deleteAccount(Authentication authentication) {
+
+        Long memberId = (Long) authentication.getPrincipal();
+
+        return accountService.deleteAccount(memberId);
+    }
 }
