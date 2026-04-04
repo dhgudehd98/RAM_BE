@@ -1,5 +1,6 @@
 package com.sh.Ram.common.exception;
 
+import com.sh.Ram.common.exception.account.AccountException;
 import com.sh.Ram.common.exception.auction.AuctionException;
 import com.sh.Ram.common.exception.auctionResult.AuctionResultException;
 import com.sh.Ram.common.exception.bid.BidException;
@@ -54,6 +55,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AuctionResultException.class)
     public ResponseEntity<Map<String, String>> handleAuctionResult(AuctionResultException e) {
+        Map<String, String> res = new HashMap<>();
+        res.put("result", "N");
+        res.put("message", e.getMessage());
+        return ResponseEntity.badRequest().body(res);
+    }
+
+    @ExceptionHandler(AccountException.class)
+    public ResponseEntity<Map<String, String>> handleAccount(AccountException e) {
         Map<String, String> res = new HashMap<>();
         res.put("result", "N");
         res.put("message", e.getMessage());
