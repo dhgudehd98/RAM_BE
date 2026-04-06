@@ -1,5 +1,6 @@
 package com.sh.Ram.elasticSearch.product.document;
 
+import com.sh.Ram.RAG.embedding.dto.EsRegisterProductDto;
 import com.sh.Ram.entity.Product;
 import jakarta.persistence.Index;
 import lombok.AllArgsConstructor;
@@ -48,7 +49,18 @@ public class ProductDocument {
         this.category = String.valueOf(product.getCategory());
         this.description = product.getDescription();
         this.tags = tags;
+    }
 
+    public ProductDocument(EsRegisterProductDto dto) {
+        this.id = dto.getProductId();
+        this.memberId = dto.getProductId();
+        this.name= dto.getProductName();
+        this.brand = dto.getBrandName();
+        this.price = dto.getPrice();
+        this.imageUrl = dto.getImageUrl();
+        this.category = dto.getCategory();
+        this.tags = dto.getTags();
+        this.description = dto.getDescription();
     }
 
 

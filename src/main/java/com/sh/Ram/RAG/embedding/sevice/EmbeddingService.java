@@ -1,5 +1,6 @@
 package com.sh.Ram.RAG.embedding.sevice;
 
+import com.sh.Ram.RAG.embedding.dto.EsRegisterProductDto;
 import com.sh.Ram.elasticSearch.product.document.ProductDocument;
 import com.sh.Ram.elasticSearch.product.repository.ProductDocumentRepository;
 import com.sh.Ram.entity.Product;
@@ -21,17 +22,14 @@ public class EmbeddingService {
     private final EmbeddingModel embeddingModel;
     private final ProductDocumentRepository productDocumentRepository;
 
-    @Async("embeddingTaskExecutor")
-    public void embedAndSave(Product product) {
+    @Async("embeddingExecutor")
+    public void embedAndSave(EsRegisterProductDto esRegisterProductDto) {
         try {
-            //! 태그에 대한 값 임시 추가
-            List<String> tags = new ArrayList<>();
-            tags.add("반팔, 반팔티, 상의");
 
-            ProductDocument document = new ProductDocument(product, tags);
+            ProductDocument document = new ProductDocument(esRegisterProductDto);
 
             // embedding-model을 통해서 description에 대한 부분을 embedding
-            float[] vector = embeddingModel.embed(product.getDescription());
+            float[] vector = embeddingModel.embed(esRegisterProductDto.getDescription());
             document.setDescriptionVector(vector);
 
             //ES에 저장

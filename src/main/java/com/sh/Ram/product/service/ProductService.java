@@ -1,6 +1,7 @@
 package com.sh.Ram.product.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sh.Ram.RAG.embedding.dto.EsRegisterProductDto;
 import com.sh.Ram.RAG.embedding.sevice.EmbeddingService;
 import com.sh.Ram.auction.repository.AuctionRepository;
 import com.sh.Ram.aws.service.S3Service;
@@ -71,6 +72,10 @@ public class ProductService {
 
     @Transactional
     public Map<String, String> regist(RegisterProductDto registerProductDto, MultipartFile image, Long memberId) throws IOException {
+        //! 태그에 대한 값 임시 추가
+        List<String> tags = new ArrayList<>();
+        tags.add("반팔, 반팔티, 상의");
+
         Map<String, String> response = new HashMap<>();
 
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new MemberException("존재하지 않는 회원입니다. 로그인을 먼저 진행 후 상품을 등록해주세요."));
@@ -89,12 +94,23 @@ public class ProductService {
 
         Product result = productRepository.save(product);
 
+        // Async로 설정해놔서 해당 트랜잭션이 종료되면 Entity에서 값을 가져오지 못해서 트랜잭션이 종료되기전에 DTO에 데이터 삽입
+        EsRegisterProductDto esRegisterProductDto = new EsRegisterProductDto(
+                product.getId(),
+                member.getId(),
+                registerProductDto.getProductName(),
+                brand.getBrandName(),
+                registerProductDto.getPrice(),
+                imageUrl,
+                String.valueOf(product.getCategory()),
+                registerProductDto.getDescription(),
+                tags
+        );
 
         // ES 저장 + description 임베딩 비동기로 설정
         if (result != null) {
-            embeddingService.embedAndSave(product);
+            embeddingService.embedAndSave(esRegisterProductDto);
         }
-
 
         // 경매를 바로 올릴 상품이라면 -> Auction Entity에 저장
         //! ProductService에서 처리할 부분이 아닌 AuctionService에서 처리하도록 로직 변경 처리 필요
