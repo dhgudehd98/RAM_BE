@@ -1,6 +1,7 @@
 package com.sh.Ram.product.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sh.Ram.RAG.embedding.sevice.EmbeddingService;
 import com.sh.Ram.auction.repository.AuctionRepository;
 import com.sh.Ram.aws.service.S3Service;
 import com.sh.Ram.brand.repository.BrandRepository;
@@ -43,6 +44,7 @@ public class ProductService {
     private final MemberRepository memberRepository;
     private final AuctionRepository auctionRepository;
     private final BrandRepository brandRepository;
+    private final EmbeddingService embeddingService;
 
     //ES
     private final ProductDocumentRepository productDocumentRepository;
@@ -71,10 +73,6 @@ public class ProductService {
     public Map<String, String> regist(RegisterProductDto registerProductDto, MultipartFile image, Long memberId) throws IOException {
         Map<String, String> response = new HashMap<>();
 
-        //! 태그에 대한 값 임시 추가
-        List<String> tags = new ArrayList<>();
-        tags.add("반팔, 반팔티, 상의");
-
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new MemberException("존재하지 않는 회원입니다. 로그인을 먼저 진행 후 상품을 등록해주세요."));
         Brand brand = brandRepository.getReferenceById(registerProductDto.getBrandId());
         String imageUrl = s3service.imageUpload(image);
@@ -91,20 +89,10 @@ public class ProductService {
 
         Product result = productRepository.save(product);
 
-        // 상품 등록할 때 DB 저장 + ES 저장
-        ProductDocument document = new ProductDocument(
-                product.getId(),
-                memberId,
-                product.getName(),
-                product.getBrand().getBrandName(),
-                product.getPrice(),
-                product.getImageUrl(),
-                String.valueOf(product.getCategory()),
-                tags
-        );
 
+        // ES 저장 + description 임베딩 비동기로 설정
         if (result != null) {
-            productDocumentRepository.save(document);
+            embeddingService.embedAndSave(product);
         }
 
 
