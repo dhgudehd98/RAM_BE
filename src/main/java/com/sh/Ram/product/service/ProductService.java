@@ -94,6 +94,7 @@ public class ProductService {
 
         Product result = productRepository.save(product);
 
+
         // Async로 설정해놔서 해당 트랜잭션이 종료되면 Entity에서 값을 가져오지 못해서 트랜잭션이 종료되기전에 DTO에 데이터 삽입
         EsRegisterProductDto esRegisterProductDto = new EsRegisterProductDto(
                 product.getId(),

@@ -49,7 +49,8 @@ public class SecurityConfig {
                                 "/notification/subscribe",
                                 "/css/**",
                                 "/js/**",
-                                "/brand"
+                                "/brand",
+                                "/embedded/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
