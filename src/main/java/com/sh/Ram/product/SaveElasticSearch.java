@@ -36,13 +36,7 @@ public class SaveElasticSearch  {
 
             Long memberId = 4L;
             ProductDocument document = new ProductDocument(
-                    product.getId(),
-                    memberId,
-                    product.getName(),
-                    product.getBrand().getBrandName(),
-                    product.getPrice(),
-                    product.getImageUrl(),
-                    String.valueOf(product.getCategory()),
+                    product,
                     list
             );
             documentRepository.save(document);
