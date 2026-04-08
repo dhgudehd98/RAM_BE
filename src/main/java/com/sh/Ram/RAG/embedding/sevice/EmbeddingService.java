@@ -2,9 +2,11 @@ package com.sh.Ram.RAG.embedding.sevice;
 
 import com.sh.Ram.RAG.embedding.dto.EsRegisterProductDto;
 import com.sh.Ram.RAG.embedding.dto.WeatherAPIResponseDto;
+import com.sh.Ram.auction.repository.AuctionRepository;
 import com.sh.Ram.elasticSearch.product.document.ProductDocument;
 import com.sh.Ram.elasticSearch.product.repository.ProductDocumentRepository;
 import com.sh.Ram.entity.Product;
+import com.sh.Ram.enums.AuctionStatus;
 import com.sh.Ram.product.dto.ProductDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +23,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +33,7 @@ public class EmbeddingService {
 
     private final EmbeddingModel embeddingModel;
     private final ProductDocumentRepository productDocumentRepository;
+    private final AuctionRepository auctionRepository;
 
     @Value("${weather.apiKey}")
     private String apiKey;
@@ -51,7 +56,7 @@ public class EmbeddingService {
         }
     }
 
-    public void recommendProductByWeather(String embeddedKeyword) {
+    public List<ProductDto> recommendProductByWeather(String embeddedKeyword) {
         /**
          * 1. 날씨 API 요청
          * 2. 날씨 API 요청 응답 값 + embeddedKeyword 값 기반으로 Embedding
@@ -60,6 +65,7 @@ public class EmbeddingService {
          */
         LocalDateTime date = LocalDateTime.now();
         LocalDateTime baseTime = date.minusMinutes(30); // 날씨는 정각 기준으로 출력을 해주기 때문에 30분전 기준으로 시간 설
+        StringBuilder builder = new StringBuilder();
 
         String baseDate = baseTime.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String baseTimeStr = baseTime.format(DateTimeFormatter.ofPattern("HH")) + "00";
@@ -75,14 +81,11 @@ public class EmbeddingService {
                 .queryParam("nx", 60)
                 .queryParam("ny", 127);
 
+        // 날씨 정보 API 요청
         RestTemplate restTemplate = new RestTemplate();
         String requestUrl = uriBuilder.build(false).toUriString();
 
         WeatherAPIResponseDto weatherAPIResponseDto = restTemplate.getForObject(requestUrl, WeatherAPIResponseDto.class);
-
-        System.out.println("==== Weather Response API ====");
-        System.out.println(weatherAPIResponseDto.toString());
-        System.out.println("==============================");
 
         if (weatherAPIResponseDto != null && weatherAPIResponseDto.response().body() != null) {
             String temp = weatherAPIResponseDto.response().body().items().item().stream()
@@ -96,15 +99,44 @@ public class EmbeddingService {
                     .map(it -> it.obsrValue())
                     .findFirst().get();
 
-            System.out.println("강수형태 : " + ptyCode);
-            System.out.println("추출된 기온: " + temp);
 
             String finalQuery = String.format("현재 기온은 %s도이고, 날씨는 %s입니다. %s",
                     temp, convertPtyCode(ptyCode), embeddedKeyword);
+            log.info("[Embedding Query] : {}", finalQuery);
 
-            System.out.println("======Embedding Query =====");
-            System.out.println(finalQuery);
+            builder.append(finalQuery);
         }
+
+        return queryEmbedToVector(builder.toString());
+
+    }
+
+    public List<ProductDto> queryEmbedToVector(String finalQuery) {
+
+        float[] vector = embeddingModel.embed(finalQuery);
+
+        List<ProductDocument> documents = productDocumentRepository.findProductsByVector(vector);
+        List<Long> productsIds = documents.stream()
+                .map(document -> document.getId())
+                .collect(Collectors.toList());
+
+        Map<Long, AuctionStatus> auctionStatusMap = auctionRepository
+                .findAuctionStatusByProductIdIn(productsIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (AuctionStatus) row[1]
+                ));
+
+        return documents
+                .stream()
+                .map(productDocument -> {
+                    ProductDto productDto = new ProductDto(productDocument);
+                    productDto.setAuctionStatus(auctionStatusMap.get(productDocument.getId()));
+                    return productDto;
+                })
+                .collect(Collectors.toList());
+
 
     }
 

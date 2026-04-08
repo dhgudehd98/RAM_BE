@@ -8,7 +8,7 @@ import org.springframework.data.elasticsearch.repository.ElasticsearchRepository
 
 import java.util.List;
 
-public interface ProductDocumentRepository extends ElasticsearchRepository<ProductDocument, String> {
+public interface ProductDocumentRepository extends ElasticsearchRepository<ProductDocument, String>, ProductEmbeddingQuery {
 
     /**
      * keyword : 검색어
