@@ -2,6 +2,7 @@ package com.sh.Ram.weather.scheduler;
 
 
 import com.sh.Ram.RAG.embedding.dto.WeatherAPIResponseDto;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Service
+@Slf4j
 public class WeatherService {
 
     @Value("${weather.apiKey}")
@@ -50,11 +52,15 @@ public class WeatherService {
                     .findFirst()
                     .orElse("0.0");
 
+            log.info("[Weather Info Temperature] : Temperature" + temperature);
+
             //강수형태 가져오기 0: 맑음(비 안오는 날씨) 1 : 비오는 날씨 , 2 : 비 + 눈 , 3: 눈이 오는 날씨 , 4 : 소나기
             String ptyCode = weatherAPIResponseDto.response().body().items().item().stream()
-                    .filter(it -> "T1H".equals(it.category()))
+                    .filter(it -> "PTY".equals(it.category()))
                     .map(it -> it.obsrValue())
                     .findFirst().get();
+
+            log.info("[Weather Info PTY] : " + ptyCode);
 
 
             String finalQuery = String.format("현재 기온은 %s도이고, 날씨는 %s입니다. %s",
