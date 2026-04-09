@@ -8,10 +8,12 @@ import com.sh.Ram.elasticSearch.product.repository.ProductDocumentRepository;
 import com.sh.Ram.entity.Product;
 import com.sh.Ram.enums.AuctionStatus;
 import com.sh.Ram.product.dto.ProductDto;
+import com.sh.Ram.redis.weather.RedisWeatherVector;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,7 @@ public class EmbeddingService {
     private final EmbeddingModel embeddingModel;
     private final ProductDocumentRepository productDocumentRepository;
     private final AuctionRepository auctionRepository;
+    private final RedisWeatherVector redisWeatherVector;
 
     @Value("${weather.apiKey}")
     private String apiKey;
@@ -56,72 +59,14 @@ public class EmbeddingService {
         }
     }
 
-    public List<ProductDto> recommendProductByWeather(String embeddedKeyword) {
-        /**
-         * 1. 날씨 API 요청
-         * 2. 날씨 API 요청 응답 값 + embeddedKeyword 값 기반으로 Embedding
-         * 3. Embedding된 벡터값을 바탕으로 ES에 저장되어 있는 상품에서 description Vector값 비교 후 추출
-         * 4. 추출된 상품 return
-         */
-        LocalDateTime date = LocalDateTime.now();
-        LocalDateTime baseTime = date.minusMinutes(30); // 날씨는 정각 기준으로 출력을 해주기 때문에 30분전 기준으로 시간 설
-        StringBuilder builder = new StringBuilder();
-
-        String baseDate = baseTime.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        String baseTimeStr = baseTime.format(DateTimeFormatter.ofPattern("HH")) + "00";
-
-        String url = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst";
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(url)
-                .queryParam("serviceKey", apiKey)
-                .queryParam("pageNo", 1)
-                .queryParam("numOfRows", 10)
-                .queryParam("dataType", "JSON")
-                .queryParam("base_date", baseDate)
-                .queryParam("base_time", baseTimeStr)
-                .queryParam("nx", 60)
-                .queryParam("ny", 127);
-
-        // 날씨 정보 API 요청
-        RestTemplate restTemplate = new RestTemplate();
-        String requestUrl = uriBuilder.build(false).toUriString();
-
-        WeatherAPIResponseDto weatherAPIResponseDto = restTemplate.getForObject(requestUrl, WeatherAPIResponseDto.class);
-
-        if (weatherAPIResponseDto != null && weatherAPIResponseDto.response().body() != null) {
-            String temp = weatherAPIResponseDto.response().body().items().item().stream()
-                    .filter(it -> "T1H".equals(it.category()))
-                    .map(it -> it.obsrValue())
-                    .findFirst()
-                    .orElse("0.0");
-
-            String ptyCode = weatherAPIResponseDto.response().body().items().item().stream()
-                    .filter(it -> "PTY".equals(it.category()))
-                    .map(it -> it.obsrValue())
-                    .findFirst().get();
-
-
-            String finalQuery = String.format("현재 기온은 %s도이고, 날씨는 %s입니다. %s",
-                    temp, convertPtyCode(ptyCode), embeddedKeyword);
-            log.info("[Embedding Query] : {}", finalQuery);
-
-            builder.append(finalQuery);
-        }
-
-        return queryEmbedToVector(builder.toString());
-
-    }
-
-    public List<ProductDto> queryEmbedToVector(String finalQuery) {
-
-        float[] vector = embeddingModel.embed(finalQuery);
-
-        List<ProductDocument> documents = productDocumentRepository.findProductsByVector(vector);
-        List<Long> productsIds = documents.stream()
+    public List<ProductDto> recommendProductByWeather() {
+        List<ProductDocument> documents = productDocumentRepository.findProductsByVector(redisWeatherVector.getWeatherVector());
+        List<Long> productIds = documents.stream()
                 .map(document -> document.getId())
-                .collect(Collectors.toList());
+                .toList();
 
         Map<Long, AuctionStatus> auctionStatusMap = auctionRepository
-                .findAuctionStatusByProductIdIn(productsIds)
+                .findAuctionStatusByProductIdIn(productIds)
                 .stream()
                 .collect(Collectors.toMap(
                         row -> (Long) row[0],
@@ -135,18 +80,6 @@ public class EmbeddingService {
                     productDto.setAuctionStatus(auctionStatusMap.get(productDocument.getId()));
                     return productDto;
                 })
-                .collect(Collectors.toList());
-
-
-    }
-
-    private String convertPtyCode(String code) {
-        return switch (code) {
-            case "1" -> "비가오는 날씨";
-            case "2" -> "비나 눈이 섞여 오는";
-            case "3" -> "눈이 오는";
-            case "4" -> "소나기가 내리는";
-            default -> "맑은(비 안오는)";
-        };
+                .toList();
     }
 }
