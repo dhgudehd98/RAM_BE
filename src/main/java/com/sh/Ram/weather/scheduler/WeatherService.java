@@ -63,8 +63,7 @@ public class WeatherService {
             log.info("[Weather Info PTY] : " + ptyCode);
 
 
-            String finalQuery = String.format("현재 기온은 %s도이고, 날씨는 %s입니다. %s",
-                    temperature, convertPtyCode(ptyCode), "현재 날씨 기반으로 상품 추천해줘");
+            String finalQuery = String.format("현재 기온은 %s도, 날씨는 %s입니다. ", temperature, convertPtyCode(ptyCode));
 
             System.out.println("[Embedding Query] : " + finalQuery);
             builder.append(finalQuery);
