@@ -22,6 +22,7 @@ public class ProductDto {
     private String imageUrl;
     private Integer wishListSize;
     private AuctionStatus auctionStatus;
+    private float score;
 //    private Category category;
 
 
