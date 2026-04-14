@@ -45,9 +45,11 @@ public class SearchService {
     public List<ProductDto> searchByKeyword(String keyword) {
 
         //Redis에 keyword 저장
-        redisRanking.setKeyword(keyword);
+//        redisRanking.setKeyword(keyword);
 
+        long start = System.currentTimeMillis();
         List<ProductDocument> documents = productDocumentRepository.searchByKeyword(keyword);
+        long esEnd = System.currentTimeMillis();
         List<Long> productIds = documents.stream()
                 .map(document -> document.getId())
                 .collect(Collectors.toList());
@@ -59,6 +61,9 @@ public class SearchService {
                         row -> (Long) row[0],
                         row -> (AuctionStatus) row[1]
                 ));
+        long dbEnd = System.currentTimeMillis();
+
+        log.info("ES 검색 소요 시간 : {}ms , DB 상태 조회 소요시간 : {} ms ", (esEnd - start), (dbEnd - start));
 
         return documents
                 .stream()
@@ -68,7 +73,39 @@ public class SearchService {
                     return productDto;
                 })
                 .collect(Collectors.toList());
+    }
 
+    public List<ProductDto> searchByKeywordNoOffSet(String keyword, List<Object> searchAfter) {
+
+        // Redis에 저장
+        redisRanking.setKeyword(keyword);
+
+        List<ProductDto> dtos = productDocumentRepository.searchByKeywordByNoOffSet(keyword, searchAfter);
+        log.info("[Product Dto Size] : {}" , dtos.size());
+        for (ProductDto dto : dtos) {
+            log.info("====== Product Dto Value ======");
+            log.info(dto.toString());
+        }
+
+        List<Long> productsIds = dtos.stream()
+                .map(ProductDto::getId)
+                .toList();
+
+        Map<Long, AuctionStatus> auctionStatusMap = auctionRepository
+                .findAuctionStatusByProductIdIn(productsIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (AuctionStatus) row[1]
+                ));
+
+        return dtos
+                .stream()
+                .map(dto -> {
+                    dto.setAuctionStatus((auctionStatusMap.get(dto.getId())));
+                    return dto;
+                })
+                .toList();
     }
 
     // 검색어 자동완성 기능 -> 브랜드 별로 자동완성하고 , 상품으로는 자동완성하지 않음
