@@ -5,6 +5,7 @@ import com.sh.Ram.entity.Account;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -57,4 +58,38 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
             @Param("memberId") Long memberId,
             @Param("accountNum") String accountNum);
 
+    @Query("SELECT a From Account a WHERE a.member.id = :memberId")
+    boolean existsByMemberId(@Param("memberId") Long memberId);
+
+    /**
+     * 가용 잔액이 충분할 때만 예약금 증가
+     * 성공하면 1, 실패하면 0 반환
+     */
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+            update Account a
+            set a.reservedBalance = a.reservedBalance + :amount
+            where a.member.id = :memberId
+            and (a.accountBalance - a.reservedBalance) >= :amount
+            """)
+    int increaseReservedBalanceIfAvailable(
+            @Param("memberId") Long memberId,
+            @Param("amount") Long amount
+    );
+
+    /**
+     * 예약금 감소
+     * 성공하면 1, 실패하면 0 반환
+     */
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+            update Account a
+            set a.reservedBalance = a.reservedBalance - :amount
+            where a.member.id = :memberId
+            and a.reservedBalance >= :amount
+           """)
+    int decreaseReservedBalance(
+            @Param("memberId") Long memberId,
+            @Param("amount") Long amount
+    );
 }

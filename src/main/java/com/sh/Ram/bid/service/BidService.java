@@ -1,15 +1,18 @@
 package com.sh.Ram.bid.service;
 
 
+import com.sh.Ram.account.repository.AccountRepository;
 import com.sh.Ram.auction.repository.AuctionRepository;
 import com.sh.Ram.bid.dto.BidListDto;
 import com.sh.Ram.bid.dto.BidResponseDto;
 import com.sh.Ram.bid.dto.HighestBidDto;
 import com.sh.Ram.bid.event.BidSubmittedEvent;
 import com.sh.Ram.bid.repository.BidRepository;
+import com.sh.Ram.common.exception.account.AccountException;
 import com.sh.Ram.common.exception.auction.AuctionException;
 import com.sh.Ram.common.exception.bid.BidException;
 import com.sh.Ram.common.exception.member.MemberException;
+import com.sh.Ram.entity.Account;
 import com.sh.Ram.entity.Auction;
 import com.sh.Ram.entity.Bid;
 import com.sh.Ram.entity.Member;
@@ -30,6 +33,7 @@ public class BidService {
 
     private final BidRepository bidRepository;
     private final AuctionRepository auctionRepository;
+    private final AccountRepository accountRepository;
     private final MemberRepository memberRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -78,12 +82,7 @@ public class BidService {
             throw new AuctionException("경매가 진행 중이 아닙니다.");
         }
 
-        // 회원 조회
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberException("회원이 존재하지 않습니다."));
-
         Integer currentPrice = auction.getCurrentPrice();
-
         Integer bidPrice;
         Integer nextBidPrice;
 
@@ -104,7 +103,6 @@ public class BidService {
 
         } else {
             // 이후 입찰
-
             Integer bidUnit = calculateBidUnit(currentPrice);
             Integer expectedNextPrice = currentPrice + bidUnit;
 
@@ -131,12 +129,38 @@ public class BidService {
             }
         });
 
+        // 6. 새 입찰자 예약금 확보 (하드 체크)
+        int reserved = accountRepository.increaseReservedBalanceIfAvailable(
+                memberId,
+                bidPrice.longValue()
+        );
+
+        if (reserved == 0) {
+            throw new BidException("가용 잔액이 부족하여 입찰할 수 없습니다.");
+        }
+
+        // 회원 조회
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException("회원이 존재하지 않습니다."));
+
         // Bid 저장
         Bid bid = new Bid(member, auction, bidPrice);
         bidRepository.save(bid);
 
         // currentPrice 업데이트
         auction.setCurrentPrice(bidPrice);
+
+        // 이전 최고 입찰자 예약금 해제
+        topBid.ifPresent(prevTopBid -> {
+            int released = accountRepository.decreaseReservedBalance(
+                    prevTopBid.getMember().getId(),
+                    prevTopBid.getBidPrice().longValue()
+            );
+
+            if (released == 0) {
+                throw new AccountException("이전 최고 입찰자의 예약금 해제에 실패했습니다.");
+            }
+        });
 
         // 이벤트 발행
         applicationEventPublisher.publishEvent(

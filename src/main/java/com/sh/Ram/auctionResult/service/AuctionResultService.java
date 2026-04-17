@@ -1,7 +1,7 @@
 package com.sh.Ram.auctionResult.service;
 
 import com.sh.Ram.account.repository.AccountRepository;
-import com.sh.Ram.accountHistory.AccountHistoryRepository;
+import com.sh.Ram.accountHistory.repository.AccountHistoryRepository;
 import com.sh.Ram.adminAccount.repository.AdminAccountRepository;
 import com.sh.Ram.common.exception.auctionResult.AuctionResultException;
 import com.sh.Ram.entity.Account;
@@ -29,12 +29,16 @@ public class AuctionResultService {
         Account buyer = accountRepository.findByMemberIdWithLock(buyerId);
         AdminAccount admin = adminAccountRepository.findByIdWithLock(1L);
 
-        if (buyer.getAccountBalance() < price) {
-            throw new AuctionResultException("계좌 잔액이 부족합니다.");
-        }
+        /**
+         * 구매자 예약금 해제 및 실제 출금
+         */
+        buyer.decreaseReservedBalance(price);
+        buyer.withdraw(price);
 
-        buyer.setAccountBalance(buyer.getAccountBalance() - price);
-        admin.setBalance(admin.getBalance() + price);
+        /**
+         * 관리자 계좌 입금
+         */
+        admin.deposit(price);
 
         /**
          * 계좌 히스토리 등록
@@ -62,8 +66,15 @@ public class AuctionResultService {
             throw new AuctionResultException("관리용 계좌 잔액이 부족합니다.");
         }
 
-        admin.setBalance(admin.getBalance() - price);
-        seller.setAccountBalance(seller.getAccountBalance() + price);
+        /**
+         * 관리자 계좌 출금
+         */
+        admin.withdraw(price);
+
+        /**
+         * 판매자 계좌 입금
+         */
+        seller.deposit(price);
 
         /**
          * 계좌 히스토리 등록

@@ -1,7 +1,7 @@
 package com.sh.Ram.batch;
 
 import com.sh.Ram.account.repository.AccountRepository;
-import com.sh.Ram.accountHistory.AccountHistoryRepository;
+import com.sh.Ram.accountHistory.repository.AccountHistoryRepository;
 import com.sh.Ram.adminAccount.repository.AdminAccountRepository;
 import com.sh.Ram.auction.repository.AuctionRepository;
 import com.sh.Ram.auctionResult.repository.AuctionResultRepository;
@@ -19,7 +19,6 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
