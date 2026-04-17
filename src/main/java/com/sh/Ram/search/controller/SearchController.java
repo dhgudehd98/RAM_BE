@@ -1,5 +1,6 @@
 package com.sh.Ram.search.controller;
 
+import com.sh.Ram.RAG.embedding.sevice.EmbeddingService;
 import com.sh.Ram.elasticSearch.brand.document.BrandDocument;
 import com.sh.Ram.product.dto.ProductDto;
 import com.sh.Ram.ranking.dto.RankingDto;
@@ -23,14 +24,20 @@ import java.util.List;
 public class SearchController {
 
     private final SearchService searchService;
+    private final EmbeddingService embeddingService;
 
-    // 상품 / 브랜드 검색
     @GetMapping("/result")
     @ResponseBody
-    public List<ProductDto> searchByKeyword(
-            @RequestParam(required = false) String keyword)
+    public List<ProductDto> searchByKeywordNoOffset(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Double lastScore,
+            @RequestParam(required = false) Long lastId
+    )
     {
-        return  searchService.searchByKeyword(keyword);
+        List<Object> searchAfter = null;
+        if(lastScore != null && lastId != null) searchAfter = List.of(lastScore, lastId);
+
+        return  searchService.searchByKeywordNoOffSet(keyword, searchAfter);
     }
 
 //    @GetMapping("/result")
@@ -56,6 +63,14 @@ public class SearchController {
     public List<RankingDto> getKeywordRanking() {
 
        return searchService.getKeywordRanking();
+    }
+
+    @GetMapping("/weather")
+    @ResponseBody
+    public List<ProductDto> recommendProductByWeather(
+            @RequestParam(required = false) Long lastId
+    ) {
+        return embeddingService.recommendProductByWeather();
     }
 
 }

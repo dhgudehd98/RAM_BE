@@ -1,5 +1,7 @@
 package com.sh.Ram.elasticSearch.product.document;
 
+import com.sh.Ram.RAG.embedding.dto.EsRegisterProductDto;
+import com.sh.Ram.entity.Product;
 import jakarta.persistence.Index;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -33,18 +35,33 @@ public class ProductDocument {
     private String imageUrl;
     private String category;
     private List<String> tags = new ArrayList<>();
+    private String description;
+    @Field(type = FieldType.Dense_Vector, dims = 1536)
+    private float[] descriptionVector;
 
-    public ProductDocument(Long id, Long memberId, String name, String brand, Integer price, String imageUrl, String category, List<String> tags) {
-        this.id = id;
-        this.memberId = memberId;
-        this.name = name;
-        this.brand = brand;
-        this.price = price;
-        this.imageUrl = imageUrl;
-        this.category = category;
+    public ProductDocument(Product product, List<String> tags) {
+        this.id = product.getId();
+        this.memberId = product.getMember().getId();
+        this.name = product.getName();
+        this.brand = product.getBrand().getBrandName();
+        this.price = product.getPrice();
+        this.imageUrl = product.getImageUrl();
+        this.category = String.valueOf(product.getCategory());
+        this.description = product.getDescription();
         this.tags = tags;
     }
 
-    @Field(type = FieldType.Dense_Vector, dims = 1536)
-    private float[] descriptionVector;
+    public ProductDocument(EsRegisterProductDto dto) {
+        this.id = dto.getProductId();
+        this.memberId = dto.getProductId();
+        this.name= dto.getProductName();
+        this.brand = dto.getBrandName();
+        this.price = dto.getPrice();
+        this.imageUrl = dto.getImageUrl();
+        this.category = dto.getCategory();
+        this.tags = dto.getTags();
+        this.description = dto.getDescription();
+    }
+
+
 }
