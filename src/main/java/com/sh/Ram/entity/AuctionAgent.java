@@ -5,6 +5,8 @@ import com.sh.Ram.auction.dto.AuctionAgentDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 
@@ -18,11 +20,11 @@ public class AuctionAgent {
     @Column(name = "agent_id")
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "auction_id")
     private Auction auction;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
 
@@ -30,9 +32,13 @@ public class AuctionAgent {
     private Long currentBid; // 입찰 금액
 
     private String bidStrategy; // 입찰 전략
+
+    @Enumerated(EnumType.STRING)
     private AgentStatus agentStatus; // Agent 상태
 
+    @CreatedDate
     private LocalDateTime createdAt; // Agent 생성시간
+    @LastModifiedDate
     private LocalDateTime updateAt; // Agent 수정시간
 
     public AuctionAgent(Auction auction , Member member, AuctionAgentDto auctionAgentDto){
@@ -41,8 +47,6 @@ public class AuctionAgent {
         this.maxBudget = auctionAgentDto.getMaxBudget();
         this.currentBid = auctionAgentDto.getCurrentBid();
         this.bidStrategy = auctionAgentDto.getBidStrategy();
-        this.agentStatus = auctionAgentDto.getAgentStatus();
-        this.createdAt = auctionAgentDto.getCreatedAt();
-        this.updateAt = auctionAgentDto.getUpdateAt();
+        this.agentStatus = AgentStatus.ACTIVE;
     }
 }
