@@ -1,16 +1,18 @@
 package com.sh.Ram.auction.service;
 
+import com.sh.Ram.auction.dto.AuctionAgentDto;
 import com.sh.Ram.auction.dto.AuctionCreateRequest;
 import com.sh.Ram.auction.dto.AuctionDto;
 import com.sh.Ram.auction.dto.AuctionUpdateRequest;
+import com.sh.Ram.auction.repository.AuctionAgentRepository;
 import com.sh.Ram.auction.repository.AuctionRepository;
 import com.sh.Ram.bid.repository.BidRepository;
 import com.sh.Ram.common.exception.auction.AuctionException;
-import com.sh.Ram.entity.Auction;
-import com.sh.Ram.entity.Product;
-import com.sh.Ram.entity.WishList;
+import com.sh.Ram.common.exception.auctionAgent.AuctionAgentException;
+import com.sh.Ram.entity.*;
 import com.sh.Ram.enums.AuctionStatus;
 import com.sh.Ram.enums.NotificationType;
+import com.sh.Ram.member.repository.MemberRepository;
 import com.sh.Ram.notification.service.NotificationService;
 import com.sh.Ram.product.repository.ProductRepository;
 import com.sh.Ram.redis.auction.dto.AuctionRealtimeDto;
@@ -25,6 +27,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -42,6 +45,8 @@ public class AuctionService {
 
     private final AuctionRedisCacheService auctionRedisCacheService;
     private final BidRepository bidRepository;
+    private final AuctionAgentRepository auctionAgentRepository;
+    private final MemberRepository memberRepository;
 
     @Transactional(readOnly = true)
     public Page<AuctionDto> auctionList(int page, String sort,  String status) {
@@ -173,6 +178,28 @@ public class AuctionService {
                     NotificationType.WISHLIST
             );
         });
+
+    }
+
+    @Transactional
+    public Map<String, String> auctionAgentRegist(AuctionAgentDto auctionAgentDto, Long memberId) {
+        try{
+            Auction auction = auctionRepository.getReferenceById(auctionAgentDto.getAuctionId());
+            Member member = memberRepository.getReferenceById(memberId);
+
+            // 동일한 경매에 동일한 사용자가 자동경매 신청해놨는지 확인 -> 중복 신청 불가
+            if(auctionAgentRepository.existsByMemberAndAuction(auction, member)) throw new AuctionAgentException("해당 경매에 자동 입찰이 설정된 내역이 존재합니다.");
+
+            auctionAgentRepository.save(new AuctionAgent(auction, member, auctionAgentDto));
+
+            return Map.of(
+                    "result", "Y",
+                    "message", "자동 입찰이 성공적으로 등록되었습니다."
+            );
+        }catch(Exception e){
+            log.error("[Auction Agent Regist Error] : {}", e.getMessage());
+            throw e;
+        }
 
     }
 }
