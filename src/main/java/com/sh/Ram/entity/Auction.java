@@ -52,6 +52,9 @@ public class Auction {
     @OneToMany(mappedBy = "auction")
     private List<Bid> bids = new ArrayList<>();
 
+    @OneToMany(mappedBy = "auction", fetch = LAZY)
+    private List<AuctionAgent> agents = new ArrayList<>();
+
     public void startAuction() {
         if (this.auctionStatus == AuctionStatus.PENDING) {
             this.auctionStatus = AuctionStatus.PROGRESS;
