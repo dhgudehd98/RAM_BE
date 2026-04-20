@@ -188,7 +188,7 @@ public class AuctionService {
             Member member = memberRepository.getReferenceById(memberId);
 
             // 동일한 경매에 동일한 사용자가 자동경매 신청해놨는지 확인 -> 중복 신청 불가
-            if(auctionAgentRepository.existsByMemberAndAuction(auction, member)) throw new AuctionAgentException("해당 경매에 자동 입찰이 설정된 내역이 존재합니다.");
+            if(auctionAgentRepository.existsByAuctionAndMember(auction, member)) throw new AuctionAgentException("해당 경매에 자동 입찰이 설정된 내역이 존재합니다.");
 
             auctionAgentRepository.save(new AuctionAgent(auction, member, auctionAgentDto));
 

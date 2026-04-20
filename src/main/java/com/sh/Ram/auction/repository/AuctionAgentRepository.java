@@ -10,5 +10,5 @@ import java.util.Optional;
 
 @Repository
 public interface AuctionAgentRepository extends JpaRepository<AuctionAgent, Long> {
-    boolean existsByMemberAndAuction(Auction auction, Member member);
+    boolean existsByAuctionAndMember(Auction auction, Member member);
 }

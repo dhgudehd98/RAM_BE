@@ -56,9 +56,10 @@ public class AuctionController {
     @PostMapping("/agent")
     @ResponseBody
     public Map<String, String> auctionAgentRegist(
-            @RequestBody AuctionAgentDto auctionAgentDto,
-            Authentication authentication
+            @RequestBody AuctionAgentDto auctionAgentDto
+//            Authentication authentication
     ){
-        return auctionService.auctionAgentRegist(auctionAgentDto, (Long)authentication.getPrincipal());
+        return auctionService.auctionAgentRegist(auctionAgentDto, 4L);
+//        return auctionService.auctionAgentRegist(auctionAgentDto, (Long)authentication.getPrincipal());
     }
 }
