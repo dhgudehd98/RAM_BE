@@ -4,6 +4,7 @@ import com.sh.Ram.auction.AgentStatus;
 import com.sh.Ram.auction.dto.AuctionAgentDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -11,6 +12,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import java.time.LocalDateTime;
 
 @Entity
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class AuctionAgent {
@@ -31,6 +33,7 @@ public class AuctionAgent {
     private Integer maxBudget; // 최대 한도
     private Long currentBid; // 입찰 금액
 
+    private String strategyValue; // 입찰전략 -> 1. 추적 2. 마감 시간 30분전에 설정
     private String bidStrategy; // 입찰 전략
 
     @Enumerated(EnumType.STRING)
