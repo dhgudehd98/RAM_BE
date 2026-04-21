@@ -40,12 +40,8 @@ public class AuctionAgentScheduler {
         List<AuctionAgent> agents = auctionAgentRepository.findByAuctionAgentStatus(AgentStatus.ACTIVE);
 
         for (AuctionAgent agent : agents) {
-
-
-            Long memberId = agent.getMember().getId(); // 4
-            Long auctionId = agent.getAuction().getId(); // 1053
-
-            log.info("[Auction Agent Info] : memberId : {}, auctionId : {}", memberId, auctionId);
+            Long memberId = agent.getMember().getId();
+            Long auctionId = agent.getAuction().getId();
 
             Optional<Bid> lastBid = bidRepository.findFirstWithMemberAndAuction(auctionId);
 
@@ -53,22 +49,19 @@ public class AuctionAgentScheduler {
                     .map(bid -> bid.getMember().getId().equals(memberId))
                     .orElse(false);
 
-
-            
-            if(!isBidLastMemberId){
-                log.info("[in If]");
-                requestAiDecision(agent, lastBid.orElse(null));
+            if(!isBidLastMemberId) {
+                AgentDecisionResponseDto agentDecisionResponseDto = requestAiDecision(agent, lastBid.orElse(null));
+                log.info("[AgentDecisionResponseDto] : " + agentDecisionResponseDto.toString());
             }
-            // Agent -> Auction -> bid -> 가장 마지막 입찰이 Agent 안에 memberId에 대한 값이랑  입찰 내역에 +
         }
     }
 
-    private void requestAiDecision(AuctionAgent agent, Bid bid) {
+    private AgentDecisionResponseDto requestAiDecision(AuctionAgent agent, Bid bid) {
 
         log.info("[RequestAiDecision]");
         Integer currentPrice = (bid != null) ? bid.getBidPrice() : agent.getAuction().getStartPrice();
         AgentDecisionRequestDto dto = new AgentDecisionRequestDto(currentPrice, agent);
-        webClient.post()
+        return webClient.post()
                 .uri("http://localhost:8081/agent/decision")
                 .bodyValue(dto)
                 .retrieve()
@@ -80,6 +73,6 @@ public class AuctionAgentScheduler {
                     } catch (Exception e) {
                         throw new RuntimeException("응답 파싱 실패 ");
                     }
-                });
+                }).block();
     }
 }
