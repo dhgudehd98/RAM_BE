@@ -1,0 +1,85 @@
+package com.sh.Ram.agent;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sh.Ram.agent.dto.AgentDecisionRequestDto;
+import com.sh.Ram.agent.dto.AgentDecisionResponseDto;
+import com.sh.Ram.agent.dto.LlmResponseDto;
+import com.sh.Ram.auction.AgentStatus;
+import com.sh.Ram.auction.repository.AuctionAgentRepository;
+import com.sh.Ram.bid.repository.BidRepository;
+import com.sh.Ram.entity.AuctionAgent;
+import com.sh.Ram.entity.Bid;
+import com.sh.Ram.product.dto.AiProductDto;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClient;
+
+import java.util.List;
+import java.util.Optional;
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class AuctionAgentScheduler {
+
+    private final AuctionAgentRepository auctionAgentRepository;
+    private final BidRepository bidRepository;
+    private final WebClient webClient;
+
+    /**
+     * 전략
+     * 1. 마감 30초 전에 마지막 입찰자가 본인이 아니라면 + 1000 원에서 입찰
+     * 2. 한도 내에서까지 경쟁자가 있으면 계속 해당 입찰자보다 1000원 입찰
+     */
+    @Scheduled(cron = "0 * * * * *")
+    public void processAuctionAgent() {
+        // 1. 현재 활성화 되어 있는 Agent들 조회
+        List<AuctionAgent> agents = auctionAgentRepository.findByAuctionAgentStatus(AgentStatus.ACTIVE);
+
+        for (AuctionAgent agent : agents) {
+
+
+            Long memberId = agent.getMember().getId(); // 4
+            Long auctionId = agent.getAuction().getId(); // 1053
+
+            log.info("[Auction Agent Info] : memberId : {}, auctionId : {}", memberId, auctionId);
+
+            Optional<Bid> lastBid = bidRepository.findFirstWithMemberAndAuction(auctionId);
+
+            boolean isBidLastMemberId = lastBid
+                    .map(bid -> bid.getMember().getId().equals(memberId))
+                    .orElse(false);
+
+
+            
+            if(!isBidLastMemberId){
+                log.info("[in If]");
+                requestAiDecision(agent, lastBid.orElse(null));
+            }
+            // Agent -> Auction -> bid -> 가장 마지막 입찰이 Agent 안에 memberId에 대한 값이랑  입찰 내역에 +
+        }
+    }
+
+    private void requestAiDecision(AuctionAgent agent, Bid bid) {
+
+        log.info("[RequestAiDecision]");
+        Integer currentPrice = (bid != null) ? bid.getBidPrice() : agent.getAuction().getStartPrice();
+        AgentDecisionRequestDto dto = new AgentDecisionRequestDto(currentPrice, agent);
+        webClient.post()
+                .uri("http://localhost:8081/agent/decision")
+                .bodyValue(dto)
+                .retrieve()
+                .bodyToMono(LlmResponseDto.class)
+                .map(llmResponseDto -> {
+                    try {
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        return objectMapper.readValue(llmResponseDto.getResponse(), AgentDecisionResponseDto.class);
+                    } catch (Exception e) {
+                        throw new RuntimeException("응답 파싱 실패 ");
+                    }
+                });
+    }
+}
