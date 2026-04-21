@@ -50,6 +50,9 @@ public class Member extends BaseEntity {
     @OneToMany(mappedBy = "member")
     private List<Notification> notifications = new ArrayList<>();
 
+    @OneToMany(mappedBy = "member")
+    private List<AuctionAgent> agents = new ArrayList<>();
+
     // 여기는 나중에 암호화해서 저장
     public Member(LoginRequestDto loginRequestDto, String password) {
         this.name = loginRequestDto.getName();

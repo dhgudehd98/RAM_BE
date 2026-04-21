@@ -19,7 +19,7 @@ public class WeatherScheduler {
     private final EmbeddingModel embeddingModel;
     private final RedisWeatherVector redisWeatherVector;
 
-    @Scheduled(cron = "0 0 * * * *")
+//    @Scheduled(cron = "0 0 * * * *")
     public void updateWeatherVector() {
 
         log.info("[날씨 + 문구 임베딩 작업 시작]");

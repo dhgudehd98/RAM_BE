@@ -1,10 +1,12 @@
 package com.sh.Ram.auction.controller;
 
+import com.sh.Ram.auction.dto.AuctionAgentDto;
 import com.sh.Ram.auction.dto.AuctionDto;
 import com.sh.Ram.auction.service.AuctionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -49,5 +51,15 @@ public class AuctionController {
         auctionService.registAuction(productId);
 
         return Map.of("Y", "경매 상품으로 정상적으로 등록되었습니다.");
+    }
+
+    @PostMapping("/agent")
+    @ResponseBody
+    public Map<String, String> auctionAgentRegist(
+            @RequestBody AuctionAgentDto auctionAgentDto
+//            Authentication authentication
+    ){
+        return auctionService.auctionAgentRegist(auctionAgentDto, 4L);
+//        return auctionService.auctionAgentRegist(auctionAgentDto, (Long)authentication.getPrincipal());
     }
 }

@@ -3,6 +3,7 @@ package com.sh.Ram.common.exception;
 import com.sh.Ram.common.exception.account.AccountException;
 import com.sh.Ram.common.exception.accountHistory.AccountHistoryException;
 import com.sh.Ram.common.exception.auction.AuctionException;
+import com.sh.Ram.common.exception.auctionAgent.AuctionAgentException;
 import com.sh.Ram.common.exception.auctionResult.AuctionResultException;
 import com.sh.Ram.common.exception.bid.BidException;
 import com.sh.Ram.common.exception.member.MemberException;
@@ -20,6 +21,15 @@ import java.util.Map;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(AuctionAgentException.class)
+    public ResponseEntity<Map<String, String>> handleAuctionAgent(AuthException e) {
+        Map<String, String> res = new HashMap<>();
+        res.put("result", "N");
+        res.put("message", e.getMessage());
+
+        return ResponseEntity.badRequest().body(res);
+    }
 
     @ExceptionHandler(AuthException.class)
     public ResponseEntity<Map<String, String>> handleAuth(AuthException e) {
