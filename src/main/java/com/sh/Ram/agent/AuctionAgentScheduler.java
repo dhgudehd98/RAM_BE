@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
@@ -31,7 +32,7 @@ import java.util.Optional;
 public class AuctionAgentScheduler {
 
     private final AuctionAgentRepository auctionAgentRepository;
-//    private final AuctionAgentLogRepository auctionAgentLogRepository;
+    private final AuctionAgentLogRepository auctionAgentLogRepository;
     private final BidService bidService;
     private final BidRepository bidRepository;
     private final WebClient webClient;
@@ -84,30 +85,25 @@ public class AuctionAgentScheduler {
     }
 
     private void agentResultDecision(AuctionAgent auctionAgent, AgentDecisionResponseDto agentDecisionResponseDto) {
-        boolean isBidSuccess = false; // 입찰 결과 설정
+        boolean isSuccess = false; // 결과 설정
         String bidFailReason = null;
-        switch (agentDecisionResponseDto.getDecision()) {
-            case "BID" -> {
-                try {
-                    BidResponseDto bidResponseDto = bidService.submitBid(agentDecisionResponseDto.getAuctionId(), auctionAgent.getMember().getId(), agentDecisionResponseDto.getSuggestedBidPrice());
 
-                    if (bidResponseDto != null) {
-                        log.info("[BID SUCCESS]");
-                        log.info(bidResponseDto.toString());
-                    }
-                } catch (Exception e) {
-                    log.error("입찰 과정중 에러가 발생하였습니다.");
-                    log.error("[Exception Message] ; {}", e.getMessage());
-                    bidFailReason = e.getMessage();
-                }
-
+        if (agentDecisionResponseDto.getDecision().equals("BID")) {
+            try{
+                bidService.submitBid(agentDecisionResponseDto.getAuctionId(), auctionAgent.getMember().getId(), agentDecisionResponseDto.getSuggestedBidPrice());
+            }catch(Exception e){
+                log.error("[BID Exception] : " + e.getMessage());
+                bidFailReason = e.getMessage();
             }
-            case "STAY" -> saveAgentDecision(agentDecisionResponseDto);
         }
+        else if(agentDecisionResponseDto.getDecision().equals("STAY")){
+            isSuccess = true; // STAY에 대한 부분은 항상 true로 설정
+        }
+
+        // AuctionAgentLog 저장
+        auctionAgentLogRepository.save(new AuctionAgentLog(agentDecisionResponseDto, auctionAgent, isSuccess, bidFailReason ));
     }
 
-    private void saveAgentDecision(AgentDecisionResponseDto agentDecisionResponseDto) {
-        // Auction Agent 로그 설정
-//        auctionAgentRepository.save(new AuctionAgentLog(agentDecisionResponseDto));
-    }
+
+
 }
