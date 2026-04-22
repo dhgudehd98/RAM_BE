@@ -19,6 +19,7 @@ import com.sh.Ram.entity.Member;
 import com.sh.Ram.enums.AuctionStatus;
 import com.sh.Ram.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +30,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BidService {
 
     private final BidRepository bidRepository;

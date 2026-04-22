@@ -1,13 +1,18 @@
 package com.sh.Ram.agent;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sh.Ram.agent.auctionAgentLog.repository.AuctionAgentLogRepository;
 import com.sh.Ram.agent.dto.AgentDecisionRequestDto;
 import com.sh.Ram.agent.dto.AgentDecisionResponseDto;
 import com.sh.Ram.agent.dto.LlmResponseDto;
 import com.sh.Ram.auction.AgentStatus;
 import com.sh.Ram.auction.repository.AuctionAgentRepository;
+import com.sh.Ram.bid.dto.BidResponseDto;
 import com.sh.Ram.bid.repository.BidRepository;
+import com.sh.Ram.bid.service.BidService;
+import com.sh.Ram.entity.Auction;
 import com.sh.Ram.entity.AuctionAgent;
+import com.sh.Ram.entity.AuctionAgentLog;
 import com.sh.Ram.entity.Bid;
 import com.sh.Ram.product.dto.AiProductDto;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
@@ -26,8 +32,11 @@ import java.util.Optional;
 public class AuctionAgentScheduler {
 
     private final AuctionAgentRepository auctionAgentRepository;
+    private final AuctionAgentLogRepository auctionAgentLogRepository;
+    private final BidService bidService;
     private final BidRepository bidRepository;
     private final WebClient webClient;
+
 
     /**
      * 전략
@@ -40,25 +49,24 @@ public class AuctionAgentScheduler {
         List<AuctionAgent> agents = auctionAgentRepository.findByAuctionAgentStatus(AgentStatus.ACTIVE);
 
         for (AuctionAgent agent : agents) {
-            Long memberId = agent.getMember().getId();
             Long auctionId = agent.getAuction().getId();
 
             Optional<Bid> lastBid = bidRepository.findFirstWithMemberAndAuction(auctionId);
 
             boolean isBidLastMemberId = lastBid
-                    .map(bid -> bid.getMember().getId().equals(memberId))
+                    .map(bid -> bid.getMember().getId().equals(agent.getMember().getId()))
                     .orElse(false);
 
             if(!isBidLastMemberId) {
                 AgentDecisionResponseDto agentDecisionResponseDto = requestAiDecision(agent, lastBid.orElse(null));
                 log.info("[AgentDecisionResponseDto] : " + agentDecisionResponseDto.toString());
+                agentResultDecision(agent, agentDecisionResponseDto);
             }
         }
     }
 
     private AgentDecisionResponseDto requestAiDecision(AuctionAgent agent, Bid bid) {
 
-        log.info("[RequestAiDecision]");
         Integer currentPrice = (bid != null) ? bid.getBidPrice() : agent.getAuction().getStartPrice();
         AgentDecisionRequestDto dto = new AgentDecisionRequestDto(currentPrice, agent);
         return webClient.post()
@@ -75,4 +83,27 @@ public class AuctionAgentScheduler {
                     }
                 }).block();
     }
+
+    private void agentResultDecision(AuctionAgent auctionAgent, AgentDecisionResponseDto agentDecisionResponseDto) {
+        boolean isSuccess = false; // 결과 설정
+        String bidFailReason = null;
+
+        if (agentDecisionResponseDto.getDecision().equals("BID")) {
+            try{
+                bidService.submitBid(agentDecisionResponseDto.getAuctionId(), auctionAgent.getMember().getId(), agentDecisionResponseDto.getSuggestedBidPrice());
+            }catch(Exception e){
+                log.error("[BID Exception] : " + e.getMessage());
+                bidFailReason = e.getMessage();
+            }
+        }
+        else if(agentDecisionResponseDto.getDecision().equals("STAY")){
+            isSuccess = true; // STAY에 대한 부분은 항상 true로 설정
+        }
+
+        // AuctionAgentLog 저장
+        auctionAgentLogRepository.save(new AuctionAgentLog(agentDecisionResponseDto, auctionAgent, isSuccess, bidFailReason ));
+    }
+
+
+
 }

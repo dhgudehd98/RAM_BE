@@ -15,6 +15,7 @@ public class AgentDecisionResponseDto {
     private String decision; // 입찰할지 안할지 -> BID || STAY ?
     private Integer suggestedBidPrice; // 입찰 금액
     private String reason; // 판단 근거 요약
+    private Integer currentPrice; // 경매 현재가
 
     @Override
     public String toString() {
@@ -22,7 +23,8 @@ public class AgentDecisionResponseDto {
                 "auctionId=" + auctionId +
                 ", decision='" + decision + '\'' +
                 ", suggestedBidPrice=" + suggestedBidPrice +
-                ", decisionReason='" + reason + '\'' +
+                ", reason='" + reason + '\'' +
+                ", currentPrice=" + currentPrice +
                 '}';
     }
 }

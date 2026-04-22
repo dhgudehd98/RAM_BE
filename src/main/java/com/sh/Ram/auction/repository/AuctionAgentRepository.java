@@ -16,6 +16,6 @@ import java.util.Optional;
 public interface AuctionAgentRepository extends JpaRepository<AuctionAgent, Long> {
     boolean existsByAuctionAndMember(Auction auction, Member member);
 
-    @Query("select a, auction from AuctionAgent a join fetch a.auction auction where a.agentStatus = :agentStatus ")
+    @Query("select a, auction from AuctionAgent a join fetch a.auction auction join fetch a.member join fetch auction.auctionResult where a.agentStatus = :agentStatus ")
     List<AuctionAgent> findByAuctionAgentStatus(@Param("agentStatus") AgentStatus agentStatus);
 }
