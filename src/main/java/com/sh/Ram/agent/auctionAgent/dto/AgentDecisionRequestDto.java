@@ -1,4 +1,4 @@
-package com.sh.Ram.agent.dto;
+package com.sh.Ram.agent.auctionAgent.dto;
 
 import com.sh.Ram.entity.AuctionAgent;
 import lombok.AllArgsConstructor;

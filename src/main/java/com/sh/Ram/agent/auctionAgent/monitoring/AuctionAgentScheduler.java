@@ -1,26 +1,20 @@
-package com.sh.Ram.agent;
+package com.sh.Ram.agent.auctionAgent.monitoring;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sh.Ram.agent.auctionAgentLog.repository.AuctionAgentLogRepository;
-import com.sh.Ram.agent.dto.AgentDecisionRequestDto;
-import com.sh.Ram.agent.dto.AgentDecisionResponseDto;
-import com.sh.Ram.agent.dto.LlmResponseDto;
+import com.sh.Ram.agent.auctionAgent.dto.AgentDecisionRequestDto;
+import com.sh.Ram.agent.auctionAgent.dto.AgentDecisionResponseDto;
+import com.sh.Ram.agent.auctionAgent.dto.LlmResponseDto;
 import com.sh.Ram.auction.AgentStatus;
 import com.sh.Ram.auction.repository.AuctionAgentRepository;
-import com.sh.Ram.bid.dto.BidResponseDto;
 import com.sh.Ram.bid.repository.BidRepository;
 import com.sh.Ram.bid.service.BidService;
-import com.sh.Ram.entity.Auction;
 import com.sh.Ram.entity.AuctionAgent;
 import com.sh.Ram.entity.AuctionAgentLog;
 import com.sh.Ram.entity.Bid;
-import com.sh.Ram.product.dto.AiProductDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
