@@ -14,7 +14,10 @@ import java.util.Optional;
 
 @Repository
 public interface AuctionAgentRepository extends JpaRepository<AuctionAgent, Long> {
-    boolean existsByAuctionAndMember(Auction auction, Member member);
+
+
+    // 엔티티의 필드명이 agentStatus라고 가정할 때
+    boolean existsByAuctionAndMemberAndAgentStatus(Auction auction, Member member, AgentStatus agentStatus);
 
     @Query("select a, auction from AuctionAgent a join fetch a.auction auction join fetch a.member join fetch auction.auctionResult where a.agentStatus = :agentStatus ")
     List<AuctionAgent> findByAuctionAgentStatus(@Param("agentStatus") AgentStatus agentStatus);

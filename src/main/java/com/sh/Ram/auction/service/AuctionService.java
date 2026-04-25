@@ -184,25 +184,4 @@ public class AuctionService {
 
     }
 
-    @Transactional
-    public Map<String, String> auctionAgentRegist(AuctionAgentDto auctionAgentDto, Long memberId) {
-        try{
-            Auction auction = auctionRepository.getReferenceById(auctionAgentDto.getAuctionId());
-            Member member = memberRepository.getReferenceById(memberId);
-
-            // 동일한 경매에 동일한 사용자가 자동경매 신청해놨는지 확인 -> 중복 신청 불가
-            if(auctionAgentRepository.existsByAuctionAndMember(auction, member)) throw new AuctionAgentException("해당 경매에 자동 입찰이 설정된 내역이 존재합니다.");
-
-            auctionAgentRepository.save(new AuctionAgent(auction, member, auctionAgentDto));
-
-            return Map.of(
-                    "result", "Y",
-                    "message", "자동 입찰이 성공적으로 등록되었습니다."
-            );
-        }catch(Exception e){
-            log.error("[Auction Agent Regist Error] : {}", e.getMessage());
-            throw e;
-        }
-
-    }
 }

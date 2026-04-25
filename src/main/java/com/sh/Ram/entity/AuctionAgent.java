@@ -54,6 +54,7 @@ public class AuctionAgent {
         this.member = member;
         this.maxBudget = auctionAgentDto.getMaxBudget();
         this.currentBid = auctionAgentDto.getCurrentBid();
+        this.strategyValue = auctionAgentDto.getStrategyValue();
         this.bidStrategy = auctionAgentDto.getBidStrategy();
         this.agentStatus = AgentStatus.ACTIVE;
     }

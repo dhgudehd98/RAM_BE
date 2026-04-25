@@ -53,13 +53,4 @@ public class AuctionController {
         return Map.of("Y", "경매 상품으로 정상적으로 등록되었습니다.");
     }
 
-    @PostMapping("/agent")
-    @ResponseBody
-    public Map<String, String> auctionAgentRegist(
-            @RequestBody AuctionAgentDto auctionAgentDto
-//            Authentication authentication
-    ){
-        return auctionService.auctionAgentRegist(auctionAgentDto, 4L);
-//        return auctionService.auctionAgentRegist(auctionAgentDto, (Long)authentication.getPrincipal());
-    }
 }
