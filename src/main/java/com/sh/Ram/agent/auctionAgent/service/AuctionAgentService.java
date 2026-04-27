@@ -4,6 +4,7 @@ import com.sh.Ram.auction.AgentStatus;
 import com.sh.Ram.auction.dto.AuctionAgentDto;
 import com.sh.Ram.auction.repository.AuctionAgentRepository;
 import com.sh.Ram.auction.repository.AuctionRepository;
+import com.sh.Ram.bid.service.BidService;
 import com.sh.Ram.common.exception.auctionAgent.AuctionAgentException;
 import com.sh.Ram.entity.Auction;
 import com.sh.Ram.entity.AuctionAgent;
@@ -15,10 +16,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.stream.Consumer;
 import org.springframework.data.redis.connection.stream.ReadOffset;
 import org.springframework.data.redis.connection.stream.StreamOffset;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +32,8 @@ public class AuctionAgentService {
     private final AuctionStreamService auctionStreamService;
     private final AuctionRepository auctionRepository;
     private final MemberRepository memberRepository;
+    private final BidService bidService;
+
     @Transactional
     public Map<String, String> auctionAgentRegist(AuctionAgentDto auctionAgentDto, Long memberId) {
         try{
@@ -58,4 +63,39 @@ public class AuctionAgentService {
 
     }
 
+    @Async
+    public void findTrackingAgents(Long auctionId, Long memberId, Integer bidPrice) {
+
+        log.info("[Find Tracking Agents]");
+        // Agent의 예산 한도에 대한 값은 다음 입찰 가격보다 큰 값을 조회
+        Integer nextBidPrice = bidPrice + calculateBidUnit(bidPrice);
+        Optional<AuctionAgent> trackingAgents = auctionAgentRepository.findTrackingAgents(auctionId, nextBidPrice);
+
+        // 해당 결과에 알맞는 Agent가 있으면 바로 입찰 기능 구현
+        if (trackingAgents.isPresent()) {
+            AuctionAgent auctionAgent = trackingAgents.get();
+
+            // 입찰한 memberId에 대한 값과 Agent의 memberId에 대한값이 동일한 값이면 종료
+            if(auctionAgent.getMember().getId().equals(memberId)) {
+                log.info("[Not Found Regist Auction Agent]");
+                return;
+            }
+
+            // Agent를 통해서 다시 입찰
+            bidService.submitBid(auctionAgent.getAuction().getId(), auctionAgent.getMember().getId(), nextBidPrice);
+        }
+    }
+
+    private Integer calculateBidUnit(Integer price) {
+
+        if (price < 10_000) return 100;
+        if (price < 50_000) return 500;
+        if (price < 100_000) return 1_000;
+        if (price < 500_000) return 5_000;
+        if (price < 1_000_000) return 10_000;
+        if (price < 5_000_000) return 50_000;
+        if (price < 10_000_000) return 100_000;
+
+        return 500_000;
+    }
 }

@@ -14,6 +14,7 @@ import com.sh.Ram.entity.AuctionAgentLog;
 import com.sh.Ram.entity.Bid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -65,7 +66,8 @@ public class AuctionAgentScheduler {
     private AgentDecisionResponseDto requestAiDecision(AuctionAgent agent, Bid bid) {
 
         Integer currentPrice = (bid != null) ? bid.getBidPrice() : agent.getAuction().getStartPrice();
-        AgentDecisionRequestDto dto = new AgentDecisionRequestDto(currentPrice, agent);
+        Integer bidUnit = calculateBidUnit(currentPrice);
+        AgentDecisionRequestDto dto = new AgentDecisionRequestDto(currentPrice, agent, bidUnit);
         return webClient.post()
                 .uri("http://localhost:8081/agent/decision")
                 .bodyValue(dto)
@@ -100,6 +102,19 @@ public class AuctionAgentScheduler {
 
         // AuctionAgentLog 저장
         auctionAgentLogRepository.save(new AuctionAgentLog(agentDecisionResponseDto, auctionAgent, isSuccess, bidFailReason ));
+    }
+
+    private Integer calculateBidUnit(Integer price) {
+
+        if (price < 10_000) return 100;
+        if (price < 50_000) return 500;
+        if (price < 100_000) return 1_000;
+        if (price < 500_000) return 5_000;
+        if (price < 1_000_000) return 10_000;
+        if (price < 5_000_000) return 50_000;
+        if (price < 10_000_000) return 100_000;
+
+        return 500_000;
     }
 
 
