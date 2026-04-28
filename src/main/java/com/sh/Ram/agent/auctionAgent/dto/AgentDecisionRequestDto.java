@@ -1,4 +1,4 @@
-package com.sh.Ram.agent.dto;
+package com.sh.Ram.agent.auctionAgent.dto;
 
 import com.sh.Ram.entity.AuctionAgent;
 import lombok.AllArgsConstructor;
@@ -14,11 +14,13 @@ public class AgentDecisionRequestDto {
     private Integer currentPrice; // 현재가
     private Integer maxBudget; // 사용자의 최대 한도
     private String agentStrategy; // Agent 사용 전략
+    private Integer bidUnit; // 최소 입찰 단위
 
-    public AgentDecisionRequestDto(Integer currentPrice, AuctionAgent auctionAgent) {
+    public AgentDecisionRequestDto(Integer currentPrice, AuctionAgent auctionAgent, Integer bidUnit) {
         this.currentPrice = currentPrice;
         this.auctionId = auctionAgent.getAuction().getId();
         this.maxBudget = auctionAgent.getMaxBudget();
         this.agentStrategy = auctionAgent.getBidStrategy();
+        this.bidUnit = bidUnit;
     }
 }

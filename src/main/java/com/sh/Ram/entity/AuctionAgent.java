@@ -36,7 +36,6 @@ public class AuctionAgent {
     private List<AuctionAgentLog> logs = new ArrayList<>();
 
     private Integer maxBudget; // 최대 한도
-    private Long currentBid; // 입찰 금액
 
     private String strategyValue; // 입찰전략 -> 1. 추적 2. 마감 시간 30분전에 설정
     private String bidStrategy; // 입찰 전략
@@ -53,7 +52,7 @@ public class AuctionAgent {
         this.auction = auction;
         this.member = member;
         this.maxBudget = auctionAgentDto.getMaxBudget();
-        this.currentBid = auctionAgentDto.getCurrentBid();
+        this.strategyValue = auctionAgentDto.getStrategyValue();
         this.bidStrategy = auctionAgentDto.getBidStrategy();
         this.agentStatus = AgentStatus.ACTIVE;
     }

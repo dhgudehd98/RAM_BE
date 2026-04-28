@@ -1,6 +1,6 @@
 package com.sh.Ram.entity;
 
-import com.sh.Ram.agent.dto.AgentDecisionResponseDto;
+import com.sh.Ram.agent.auctionAgent.dto.AgentDecisionResponseDto;
 import com.sh.Ram.enums.AgentDecision;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
