@@ -12,14 +12,13 @@ import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.data.redis.connection.stream.Consumer;
-import org.springframework.data.redis.connection.stream.MapRecord;
-import org.springframework.data.redis.connection.stream.ReadOffset;
-import org.springframework.data.redis.connection.stream.StreamOffset;
+import org.springframework.data.domain.Range;
+import org.springframework.data.redis.connection.stream.*;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.stream.StreamMessageListenerContainer;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -34,18 +33,49 @@ public class ProductIndexConsumer implements ApplicationRunner {
     private final EmbeddingModel embeddingModel;
     private static final String STREAM_KEY = "product:index:stream";
     private static final String GROUP_NAME = "product-group";
+    private static final String CONSUMER_NAME = "product-index-consumer-1";
     @Override
     public void run(ApplicationArguments args) throws Exception {
         initStream();
-
+        processPendingProduct();
         container.receive(
-                Consumer.from(GROUP_NAME, "product-index-consumer-1"),
+                Consumer.from(GROUP_NAME, CONSUMER_NAME),
                 StreamOffset.create(STREAM_KEY, ReadOffset.lastConsumed()),
                 this::handleMessage
         );
     }
 
+    private void processPendingProduct() {
+
+        /**
+         * PendingMessages
+         *  - Pending되어 있는 메세지의 메타정보만 가져옴
+         *  메타정보 -> messageId (productId에 대한 값은 없음, consumer-name, pending 시간, 재시도 횟수)
+         */
+        PendingMessages pendingMessages = redisTemplate.opsForStream()
+                .pending(STREAM_KEY, Consumer.from(GROUP_NAME, CONSUMER_NAME), Range.unbounded(), 100L);
+
+        //Pending Message가 없는 경우에는 종료
+        if(pendingMessages == null || pendingMessages.isEmpty()) return;
+
+        for (PendingMessage message : pendingMessages) {
+
+            List<MapRecord<String, String, String>> range =  (List<MapRecord<String, String, String>>) (List<?>)redisTemplate.opsForStream()
+                    .range(STREAM_KEY, Range.closed(
+                            message.getId().getValue(),
+                            message.getId().getValue()
+                    ));
+
+            if(range != null && !range.isEmpty()){
+                handleMessage(range.get(0));
+            }
+
+        }
+
+    }
+
     private void handleMessage(MapRecord<String, String, String> message) {
+        log.info("[HandleMessage] messageId : {} , productId : {}", message.getId(), message.getValue().get("productId"));
 
         try {
             // 상품 정보 가져 오기
