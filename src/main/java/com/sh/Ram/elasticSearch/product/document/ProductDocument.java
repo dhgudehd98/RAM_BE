@@ -63,5 +63,18 @@ public class ProductDocument {
         this.description = dto.getDescription();
     }
 
+    public ProductDocument(Product product, float[] vectors) {
+        this.id = product.getId();
+        this.memberId = product.getMember().getId();
+        this.name= product.getName();
+        this.brand = product.getBrand().getBrandName();
+        this.price = product.getPrice();
+        this.imageUrl = product.getImageUrl();
+        this.category = String.valueOf(product.getCategory());
+        this.tags = List.of("반팔", "후드집업", "상의");
+        this.description = product.getDescription();
+        this.descriptionVector = vectors;
+    }
+
 
 }

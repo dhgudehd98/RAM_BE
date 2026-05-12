@@ -30,4 +30,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, Product
 
     @Query("select p from Product p left join fetch p.wishList where p.id = :id")
     Optional<Product> findByIdWithWishListSize(@Param("id") Long id);
+
+    @Query("select p from Product p join fetch p.brand b where p.id = :id")
+    Optional<Product> findByIdWithBrand(@Param("id") Long productId);
 }

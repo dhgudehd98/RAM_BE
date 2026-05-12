@@ -24,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
@@ -48,7 +49,7 @@ public class ProductService {
     private final EmbeddingService embeddingService;
 
     //ES
-    private final ProductDocumentRepository productDocumentRepository;
+    private final RedisTemplate<String, String> redisTemplate;
     private final WishListRepository wishListRepoistory;
     private final WebClient webClient;
     private final S3Service s3service;
@@ -80,8 +81,8 @@ public class ProductService {
 
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new MemberException("존재하지 않는 회원입니다. 로그인을 먼저 진행 후 상품을 등록해주세요."));
         Brand brand = brandRepository.getReferenceById(registerProductDto.getBrandId());
-        String imageUrl = s3service.imageUpload(image);
-
+//        String imageUrl = s3service.imageUpload(image);
+        String imageUrl = "https://imageUrl";
         Product product = new Product(
                 member,
                 registerProductDto.getProductName(),
@@ -95,26 +96,16 @@ public class ProductService {
         Product result = productRepository.save(product);
 
 
-        // Async로 설정해놔서 해당 트랜잭션이 종료되면 Entity에서 값을 가져오지 못해서 트랜잭션이 종료되기전에 DTO에 데이터 삽입
-        EsRegisterProductDto esRegisterProductDto = new EsRegisterProductDto(
-                product.getId(),
-                member.getId(),
-                registerProductDto.getProductName(),
-                brand.getBrandName(),
-                registerProductDto.getPrice(),
-                imageUrl,
-                String.valueOf(product.getCategory()),
-                registerProductDto.getDescription(),
-                tags
-        );
-
-        // ES 저장 + description 임베딩 비동기로 설정
-        if (result != null) {
-            embeddingService.embedAndSave(esRegisterProductDto);
-        }
+        /**
+         * 상품 저장 시 비동기 처리 기능
+         * 1. 상품 상세설명 description
+         * 2. ES에 상품 동기화
+         * Redis Stream -> product:index:stream
+         */
+        redisTemplate.opsForStream()
+                .add("product:index:stream", Map.of("productId", String.valueOf(result.getId())));
 
         // 경매를 바로 올릴 상품이라면 -> Auction Entity에 저장
-        //! ProductService에서 처리할 부분이 아닌 AuctionService에서 처리하도록 로직 변경 처리 필요
         if (registerProductDto.getIsAuction()) {
             Auction auction = new Auction(
                     product,
