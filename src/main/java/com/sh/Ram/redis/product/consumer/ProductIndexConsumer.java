@@ -77,12 +77,26 @@ public class ProductIndexConsumer implements ApplicationRunner {
     private void handleMessage(MapRecord<String, String, String> message) {
         log.info("[HandleMessage] messageId : {} , productId : {}", message.getId(), message.getValue().get("productId"));
 
-        try {
-            // 상품 정보 가져 오기
-            Long productId = Long.parseLong(message.getValue().get("productId"));
-            Product product = productRepository.findByIdWithBrand(productId).get();
+        // 상품 action 상태 및 상품 정보 가져오기
+        String action = message.getValue().get("action"); // CREATE : 상품 생성 , UPDATE : 상품정보 업데이트 , DELETE : 상품 삭제
+        Long productId = Long.parseLong(message.getValue().get("productId"));
 
-            log.info("[Redis Stream In Product Info] : " + productId);
+        // 상품을 삭제하는 과정에서는 Product를 조회할 필요가 없기 떄문에 productId에 대한 값만 설정
+        if(action.equals("DELETE")) deleteProductIndex(productId, message);
+
+        Product product = productRepository.findByIdWithBrand(productId).get();
+        log.info("[Product Index Action] : {}", action);
+
+        switch (action) {
+            case "CREATE" -> createProductIndex(product, message);
+            case "UPDATE" -> updateProductIndex(product, message);
+        }
+    }
+
+    private void createProductIndex(Product product, MapRecord<String, String, String> message) {
+        log.info("[Create Product Index] productId : {}", String.valueOf(product.getId()));
+
+        try {
             // 상품 상세 설명 -> Embedding 모델을 통해서 벡터화
             float[] vectors = embeddingModel.embed(product.getDescription());
 
@@ -93,9 +107,43 @@ public class ProductIndexConsumer implements ApplicationRunner {
             redisTemplate.opsForStream()
                     .acknowledge(STREAM_KEY, GROUP_NAME, message.getId());
 
-            log.info("[ES 색인 과정 성공] : {}  처리 Message Id : {}", message.getId());
+            log.info("[ES Product Create 완료] : {}  처리 Message Id : {}", message.getId());
         } catch (Exception e) {
-            log.error("[ES 색인 과정 실패] : {}", e.getMessage());
+            log.error("[ES Product Create 실패] : {}", e.getMessage());
+        }
+    }
+
+    private void updateProductIndex(Product product, MapRecord<String, String, String> message) {
+        log.info("[Update Product Index] productId : {}", String.valueOf(product.getId()));
+
+        try{
+            // 상품 상세 설명 -> Embedding 모델을 통해서 벡터화
+            float[] vectors = embeddingModel.embed(product.getDescription());
+
+            // ES에서 save => upsert
+            ProductDocument productDocument = new ProductDocument(product, vectors);
+            productDocumentRepository.save(productDocument);
+
+            redisTemplate.opsForStream()
+                    .acknowledge(STREAM_KEY, GROUP_NAME, message.getId());
+
+            log.info("[ES Product Update 완료] 처리 Message Id : {}", message.getId());
+        } catch (Exception e) {
+            log.error("[ES Product Update 실패] : {}", e.getMessage());
+        }
+
+    }
+
+    private void deleteProductIndex(Long productId, MapRecord<String, String, String> message) {
+        try{
+            productDocumentRepository.deleteById(String.valueOf(productId));
+
+            redisTemplate.opsForStream()
+                    .acknowledge(STREAM_KEY, GROUP_NAME, message.getId());
+
+            log.info("[ES Product DELETE 완료] productId : {}", productId);
+        } catch (Exception e) {
+            log.error("[ES Product DELETE 실패] : {}", e.getMessage());
         }
     }
 

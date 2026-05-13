@@ -103,7 +103,10 @@ public class ProductService {
          * Redis Stream -> product:index:stream
          */
         redisTemplate.opsForStream()
-                .add("product:index:stream", Map.of("productId", String.valueOf(result.getId())));
+                .add("product:index:stream",
+                        Map.of("productId", String.valueOf(result.getId()),
+                                "action","CREATE")
+                );
 
         // 경매를 바로 올릴 상품이라면 -> Auction Entity에 저장
         if (registerProductDto.getIsAuction()) {
@@ -121,7 +124,6 @@ public class ProductService {
         response.put("message", "상품이 정상적으로 등록되었습니다.");
 
         return response;
-
     }
 
     public Mono<AiProductDto> getProductInfo(MultipartFile image) {
@@ -143,7 +145,6 @@ public class ProductService {
                         throw new RuntimeException("응답 파싱 실패 ");
                     }
                 });
-
     }
 
     public ProductDto getProductDetail(Long productId) {
