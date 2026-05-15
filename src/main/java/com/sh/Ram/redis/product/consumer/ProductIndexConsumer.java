@@ -31,7 +31,7 @@ public class ProductIndexConsumer implements ApplicationRunner {
     private final ProductDocumentRepository productDocumentRepository;
     private final StringRedisTemplate redisTemplate;
     private final EmbeddingModel embeddingModel;
-    private static final String STREAM_KEY = "product:index:stream";
+    private static final String STREAM_NAME = "product:index:stream";
     private static final String GROUP_NAME = "product-group";
     private static final String CONSUMER_NAME = "product-index-consumer-1";
     @Override
@@ -40,9 +40,20 @@ public class ProductIndexConsumer implements ApplicationRunner {
         processPendingProduct();
         container.receive(
                 Consumer.from(GROUP_NAME, CONSUMER_NAME),
-                StreamOffset.create(STREAM_KEY, ReadOffset.lastConsumed()),
+                StreamOffset.create(STREAM_NAME, ReadOffset.lastConsumed()),
                 this::handleMessage
         );
+    }
+
+    // Stream 초기화 -> Stream 생성 및 Consumer / Consumer-Group 생성
+    private void initStream() {
+        try {
+            log.info("[Product Index Stream & Consumer group Create");
+            redisTemplate.opsForStream()
+                    .createGroup(STREAM_NAME, ReadOffset.from("0"), GROUP_NAME);
+        } catch (Exception e) {
+            log.info("[Consumer Group 이미 존재]");
+        }
     }
 
     private void processPendingProduct() {
@@ -53,15 +64,22 @@ public class ProductIndexConsumer implements ApplicationRunner {
          *  메타정보 -> messageId (productId에 대한 값은 없음, consumer-name, pending 시간, 재시도 횟수)
          */
         PendingMessages pendingMessages = redisTemplate.opsForStream()
-                .pending(STREAM_KEY, Consumer.from(GROUP_NAME, CONSUMER_NAME), Range.unbounded(), 100L);
+                .pending(STREAM_NAME, Consumer.from(GROUP_NAME, CONSUMER_NAME), Range.unbounded(), 100L);
 
         //Pending Message가 없는 경우에는 종료
         if(pendingMessages == null || pendingMessages.isEmpty()) return;
 
         for (PendingMessage message : pendingMessages) {
 
+            if (message.getTotalDeliveryCount() > 3) {
+                log.error("[ES 색인 과정 재시도 횟수 초과] 해당 productId : {} 재시도 횟수 : {} ", message.getId(), message.getTotalDeliveryCount());
+
+                // 재시도 횟수 남은 messageId 강제로 ack 날려서 Pending에서 제거
+                redisTemplate.opsForStream().acknowledge(STREAM_NAME, GROUP_NAME, message.getId());
+                continue;
+            }
             List<MapRecord<String, String, String>> range =  (List<MapRecord<String, String, String>>) (List<?>)redisTemplate.opsForStream()
-                    .range(STREAM_KEY, Range.closed(
+                    .range(STREAM_NAME, Range.closed(
                             message.getId().getValue(),
                             message.getId().getValue()
                     ));
@@ -105,7 +123,7 @@ public class ProductIndexConsumer implements ApplicationRunner {
             productDocumentRepository.save(productDocument);
 
             redisTemplate.opsForStream()
-                    .acknowledge(STREAM_KEY, GROUP_NAME, message.getId());
+                    .acknowledge(STREAM_NAME, GROUP_NAME, message.getId());
 
             log.info("[ES Product Create 완료] : {}  처리 Message Id : {}", message.getId());
         } catch (Exception e) {
@@ -125,7 +143,7 @@ public class ProductIndexConsumer implements ApplicationRunner {
             productDocumentRepository.save(productDocument);
 
             redisTemplate.opsForStream()
-                    .acknowledge(STREAM_KEY, GROUP_NAME, message.getId());
+                    .acknowledge(STREAM_NAME, GROUP_NAME, message.getId());
 
             log.info("[ES Product Update 완료] 처리 Message Id : {}", message.getId());
         } catch (Exception e) {
@@ -139,22 +157,11 @@ public class ProductIndexConsumer implements ApplicationRunner {
             productDocumentRepository.deleteById(String.valueOf(productId));
 
             redisTemplate.opsForStream()
-                    .acknowledge(STREAM_KEY, GROUP_NAME, message.getId());
+                    .acknowledge(STREAM_NAME, GROUP_NAME, message.getId());
 
             log.info("[ES Product DELETE 완료] productId : {}", productId);
         } catch (Exception e) {
             log.error("[ES Product DELETE 실패] : {}", e.getMessage());
-        }
-    }
-
-    // Stream 초기화 -> Stream 생성 및 Consumer / Consumer-Group 생성
-    private void initStream() {
-        try {
-            log.info("[Product Index Stream & Consumer group Create");
-            redisTemplate.opsForStream()
-                    .createGroup(STREAM_KEY, ReadOffset.from("0"), GROUP_NAME);
-        } catch (Exception e) {
-            log.info("[Consumer Group 이미 존재]");
         }
     }
 }
