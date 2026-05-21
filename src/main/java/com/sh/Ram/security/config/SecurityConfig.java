@@ -50,7 +50,8 @@ public class SecurityConfig {
                                 "/css/**",
                                 "/js/**",
                                 "/brand",
-                                "/embedded/**"
+                                "/embedded/**",
+                                "/auction/agent"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
