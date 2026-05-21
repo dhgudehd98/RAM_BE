@@ -109,15 +109,20 @@ public class BidService {
             Integer expectedNextPrice = currentPrice + bidUnit;
 
             // 가격 검증
-            if (!expectedPrice.equals(expectedNextPrice)) {
+//            if (!expectedPrice.equals(expectedNextPrice)) {
+//                throw new BidException(
+//                        "가격이 변경되었습니다. 다시 입찰해주세요",
+//                        currentPrice,
+//                        expectedNextPrice
+//                );
+//            }
+            if (expectedPrice < expectedNextPrice) {
                 throw new BidException(
-                        "가격이 변경되었습니다. 다시 입찰해주세요",
-                        currentPrice,
-                        expectedNextPrice
+                        "최소 입찰 금액 이상으로 입찰해주세요.", currentPrice, expectedNextPrice
                 );
             }
 
-            bidPrice = expectedNextPrice;
+            bidPrice = expectedPrice;
             nextBidPrice = bidPrice + calculateBidUnit(bidPrice);
         }
 
