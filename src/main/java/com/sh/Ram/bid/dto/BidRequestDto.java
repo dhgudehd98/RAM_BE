@@ -9,5 +9,7 @@ import lombok.Setter;
 public class BidRequestDto {
 
     private Long memberId;
-    private Integer expectedPrice;
+//    private Integer expectedPrice;
+    private int bidPrice; // 입찰금액
+
 }
