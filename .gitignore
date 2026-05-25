@@ -7,7 +7,6 @@ build/
 !**/src/test/**/build/
 
 src/test/resources/application-test.properties
-
 ### STS ###
 .apt_generated
 .classpath
@@ -38,3 +37,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Codex ###
+.codex/**
