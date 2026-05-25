@@ -39,7 +39,18 @@ public class BidController {
             @PathVariable Long auctionId,
             @RequestBody BidRequestDto request
     ){
-        return bidService.submitBid(auctionId, request);
+        return bidService.submitBid(auctionId,
+                request.getMemberId(),
+                request.getExpectedPrice()
+        );
+    }
+
+    @PostMapping("/{auctionId}/bids")
+    public BidResponseDto submitBidRedis(
+            @PathVariable Long auctionId,
+            @RequestBody BidRequestDto request
+    ){
+        return bidService.submitBidRedis(auctionId, request);
     }
 
     /**
