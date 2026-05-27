@@ -95,7 +95,7 @@ public class BidService {
         String lockKey = BID_LOCK_KEY + auctionId;
         String lockValue = UUID.randomUUID().toString();
 
-        if (!tryLock(lockKey, lockValue)) {
+        if (!tryLock(lockKey, lockValue, request.getMemberId())) {
             throw new BidException("현재 입찰 요청이 많아서 잠시 후에 시도해주세요.");
         }
 
@@ -161,7 +161,8 @@ public class BidService {
         }
 
         // 회원 조회
-        Member member = memberRepository.getReferenceById(memberId);
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException("회원이 존재하지 않습니다."));
 
         // 이전 최고 입찰자 예약금 해제
         topBid.ifPresent(prevTopBid -> {
@@ -181,8 +182,11 @@ public class BidService {
         log.info("[입찰 완료] 입찰자 : {} , 입찰 가격 : {} ", memberId, bidPrice);
 
         // currentPrice 업데이트
-        auction.setCurrentPrice(bidPrice);
+        int updateAuctionCurrentPrice = auctionRepository.updateAuctionCurrentPrice(bidPrice, auctionId);
+        log.info("[입찰 현재가 결과] updateResult : {}", updateAuctionCurrentPrice);
 
+        if(updateAuctionCurrentPrice == 1) log.info("[입찰 현재가 반영 완료] 경매번호 : {}, 회원번호 : {}, 입찰가격 : {}, 경매 현재가 : {}", auctionId, memberId, bidPrice, currentPrice);
+        else log.info("[입찰 현재가 반영 실패] 경매번호 : {}, 회원번호 : {}, 입찰가격 : {}, 경매 현재가 : {}", auctionId, memberId, bidPrice, currentPrice);
         // 이벤트 발행
         applicationEventPublisher.publishEvent(
                 new BidSubmittedEvent(
@@ -204,8 +208,8 @@ public class BidService {
                 .build();
     }
 
-    // 락 확인
-    private boolean tryLock(String lockKey, String lockValue) {
+    //     락 확인
+    private boolean tryLock(String lockKey, String lockValue, Long memberId) {
         long deadline = System.currentTimeMillis() + BID_LOCK_WAIT_MILLIS; // 락 얻기 위해서 지속적으로 요청
 
         while (System.currentTimeMillis() < deadline) {
@@ -215,6 +219,7 @@ public class BidService {
                     .setIfAbsent(lockKey, lockValue, BID_LOCK_TTL);
 
             if (Boolean.TRUE.equals(acquired)) {
+                log.info("[Redis 락 획득] 사용자 번호 : {}", memberId);
                 return true;
             }
 
@@ -286,14 +291,6 @@ public class BidService {
             Integer bidUnit = calculateBidUnit(currentPrice);
             Integer expectedNextPrice = currentPrice + bidUnit;
 
-            // 가격 검증
-//            if (!expectedPrice.equals(expectedNextPrice)) {
-//                throw new BidException(
-//                        "가격이 변경되었습니다. 다시 입찰해주세요",
-//                        currentPrice,
-//                        expectedNextPrice
-//                );
-//            }
             if (expectedPrice < expectedNextPrice) {
                 throw new BidException(
                         "최소 입찰 금액 이상으로 입찰해주세요.", currentPrice, expectedNextPrice
@@ -321,6 +318,7 @@ public class BidService {
         );
 
         if (reserved == 0) {
+            log.info("[가용 잔액 부족] : 해당 회원번호 : {}", memberId);
             throw new BidException("가용 잔액이 부족하여 입찰할 수 없습니다.");
         }
 
@@ -333,7 +331,12 @@ public class BidService {
         bidRepository.save(bid);
 
         // currentPrice 업데이트
-        auction.setCurrentPrice(bidPrice);
+        // 위의 로직에서 준영속된 Auction에 대한 값을 다시 영속상태로 만들기
+        Auction refreshAuction = auctionRepository.findById(auctionId).get();
+        refreshAuction.setCurrentPrice(bidPrice);
+
+
+        log.info("[Auction Info] 경매번호 :{} , 현재가 : {} , 입찰가 : {}", auctionId, auction.getCurrentPrice(), bidPrice);
 
         // 이전 최고 입찰자 예약금 해제
         topBid.ifPresent(prevTopBid -> {
