@@ -208,29 +208,19 @@ public class BidService {
                 .build();
     }
 
-    //     락 확인
+    // Redis 분산락 확인(락 획득 재시도 로직 없이 확인)
     private boolean tryLock(String lockKey, String lockValue, Long memberId) {
-        long deadline = System.currentTimeMillis() + BID_LOCK_WAIT_MILLIS; // 락 얻기 위해서 지속적으로 요청
+        // setIfAbsent는 레디스에 키가 없을 때만 저장(NX)하므로 원자적(Atomic)으로 락 선점이 가능합니다.
+        Boolean acquired = stringRedisTemplate.opsForValue()
+                .setIfAbsent(lockKey, lockValue, BID_LOCK_TTL);
 
-        while (System.currentTimeMillis() < deadline) {
-
-            // 락 획득
-            Boolean acquired = stringRedisTemplate.opsForValue()
-                    .setIfAbsent(lockKey, lockValue, BID_LOCK_TTL);
-
-            if (Boolean.TRUE.equals(acquired)) {
-                log.info("[Redis 락 획득] 사용자 번호 : {}", memberId);
-                return true;
-            }
-
-            try {
-                Thread.sleep(BID_LOCK_RETRY_INTERVAL_MILLIS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new BidException("입찰 처리 중 인터럽트가 발생했습니다.");
-            }
+        if (Boolean.TRUE.equals(acquired)) {
+            log.info("[Redis 락 획득 성공] 사용자 번호 : {}", memberId);
+            return true;
         }
 
+        // 락 획득에 실패하면 미련 없이 즉시 false 반환
+        log.info("[Redis 락 획득 실패] 이미 다른 사용자가 입찰 중입니다. 사용자 번호 : {}", memberId);
         return false;
     }
 
