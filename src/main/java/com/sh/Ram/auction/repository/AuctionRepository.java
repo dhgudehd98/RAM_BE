@@ -43,6 +43,10 @@ public interface AuctionRepository extends JpaRepository<Auction, Long>, Auction
             countQuery = "SELECT count(a) FROM Auction a WHERE a.auctionStatus = :status")
     Page<Auction> findAuctionByStatus(Pageable pageable, @Param("status") AuctionStatus auctionStatus);
 
+    @Query(value = "SELECT a FROM Auction a JOIN FETCH a.product p JOIN FETCH p.brand WHERE a.id = :auctionId and a.auctionStatus = :status",
+            countQuery = "SELECT count(a) FROM Auction a WHERE a.id = :auctionId and a.auctionStatus = :status")
+    Optional<Auction> findAuctionByIdAndStatus(@Param("auctionId") Long auctionId , @Param("status") AuctionStatus auctionStatus);
+
     // 상품중에 경매에 등록된 상품인지 확인하는 쿼리
     @Query("SELECT a.product.id, a.auctionStatus FROM Auction a WHERE a.product.id IN :productIds")
     List<Object[]> findAuctionStatusByProductIdIn(@Param("productIds") List<Long> productIds);
@@ -66,4 +70,14 @@ public interface AuctionRepository extends JpaRepository<Auction, Long>, Auction
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT a FROM Auction a WHERE a.id = :auctionId ")
     Optional<Auction> findByAuctionWithLock(@Param("auctionId") Long auctionId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(
+    """
+    UPDATE Auction a
+    SET a.currentPrice = :bidPrice
+    where a.id = :auctionId
+    """
+    )
+    int updateAuctionCurrentPrice(@Param("bidPrice")int bidPrice , @Param("auctionId") Long auctionId);
 }
