@@ -7,6 +7,7 @@ import com.sh.Ram.agent.auctionAgent.dto.AgentDecisionResponseDto;
 import com.sh.Ram.agent.auctionAgent.dto.LlmResponseDto;
 import com.sh.Ram.auction.AgentStatus;
 import com.sh.Ram.auction.repository.AuctionAgentRepository;
+import com.sh.Ram.bid.dto.BidRequestDto;
 import com.sh.Ram.bid.repository.BidRepository;
 import com.sh.Ram.bid.service.BidService;
 import com.sh.Ram.entity.AuctionAgent;
@@ -89,7 +90,7 @@ public class AuctionAgentScheduler {
 
         if (agentDecisionResponseDto.getDecision().equals("BID")) {
             try{
-                bidService.submitBid(agentDecisionResponseDto.getAuctionId(), auctionAgent.getMember().getId(), agentDecisionResponseDto.getSuggestedBidPrice());
+                bidService.submitBidRedis(agentDecisionResponseDto.getAuctionId(), new BidRequestDto(auctionAgent.getMember().getId(), agentDecisionResponseDto.getSuggestedBidPrice()));
                 isSuccess = true;
             }catch(Exception e){
                 log.error("[BID Exception] : " + e.getMessage());
