@@ -23,28 +23,6 @@ public class BidController {
     /**
      * 입찰 API
      */
-//    @PostMapping("/{auctionId}/bids")
-//    public BidResponseDto submitBid(
-//            @PathVariable Long auctionId,
-//            @RequestBody BidRequestDto request
-//    ) {
-//        return bidService.submitBid(auctionId,
-//                request.getMemberId(),
-//                request.getExpectedPrice()
-//        );
-//    }
-
-    @PostMapping("/{auctionId}/bids")
-    public BidResponseDto submitBid(
-            @PathVariable Long auctionId,
-            @RequestBody BidRequestDto request
-    ){
-        return bidService.submitBid(auctionId,
-                request.getMemberId(),
-                request.getExpectedPrice()
-        );
-    }
-
     @PostMapping("/{auctionId}/bids")
     public BidResponseDto submitBidRedis(
             @PathVariable Long auctionId,

@@ -51,9 +51,6 @@ public class BidService {
 
     private static final String BID_LOCK_KEY = "lock:auction:bid:";
     private static final Duration BID_LOCK_TTL = Duration.ofSeconds(5); // 락 유지 시간 5초
-    private static final long BID_LOCK_WAIT_MILLIS = 2_000L; // 락 획득 대기시간 2초
-    private static final long BID_LOCK_RETRY_INTERVAL_MILLIS = 50L; // 재시도 간격 50ms -> 50ms보다 락 획득 시도
-
     /**
      * 입찰 내역 조회 (페이징)
      */
@@ -241,125 +238,125 @@ public class BidService {
         );
     }
 
-    /**
-     * 입찰
-     */
-    @Transactional
-    public BidResponseDto submitBid(Long auctionId, Long memberId, Integer expectedPrice) {
-
-        // 경매 조회 + Lock
-        Auction auction = auctionRepository.findByAuctionWithLock(auctionId)
-                .orElseThrow(() -> new AuctionException("경매가 존재하지 않습니다."));
-
-
-        // 경매 상태 검증
-        if (auction.getAuctionStatus() != AuctionStatus.PROGRESS) {
-            throw new AuctionException("경매가 진행 중이 아닙니다.");
-        }
-
-        Integer currentPrice = auction.getCurrentPrice();
-        Integer bidPrice;
-        Integer nextBidPrice;
-
-        // 첫 입찰
-        if (currentPrice == null) {
-
-            // 첫 입찰은 시작가
-            if (!expectedPrice.equals(auction.getStartPrice())) {
-                throw new BidException(
-                        "첫 입찰은 시작가여야 합니다.",
-                        auction.getStartPrice(),
-                        auction.getStartPrice()
-                );
-            }
-
-            bidPrice = auction.getStartPrice();
-            nextBidPrice = bidPrice + calculateBidUnit(bidPrice);
-
-        } else {
-            // 이후 입찰
-            Integer bidUnit = calculateBidUnit(currentPrice);
-            Integer expectedNextPrice = currentPrice + bidUnit;
-
-            if (expectedPrice < expectedNextPrice) {
-                throw new BidException(
-                        "최소 입찰 금액 이상으로 입찰해주세요.", currentPrice, expectedNextPrice
-                );
-            }
-
-            bidPrice = expectedPrice;
-            nextBidPrice = bidPrice + calculateBidUnit(bidPrice);
-        }
-
-        // 최고 입찰자 중복 방지
-        Optional<Bid> topBid =
-                bidRepository.findTopByAuctionIdOrderByBidPriceDesc(auctionId);
-
-        topBid.ifPresent(bid -> {
-            if (bid.getMember().getId().equals(memberId)) {
-                throw new BidException("이미 최고 입찰자입니다.");
-            }
-        });
-
-        // 6. 새 입찰자 예약금 확보 (하드 체크)
-        int reserved = accountRepository.increaseReservedBalanceIfAvailable(
-                memberId,
-                bidPrice.longValue()
-        );
-
-        if (reserved == 0) {
-            log.info("[가용 잔액 부족] : 해당 회원번호 : {}", memberId);
-            throw new BidException("가용 잔액이 부족하여 입찰할 수 없습니다.");
-        }
-
-        // 회원 조회
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberException("회원이 존재하지 않습니다."));
-
-        // Bid 저장
-        Bid bid = new Bid(member, auction, bidPrice);
-        bidRepository.save(bid);
-
-        // currentPrice 업데이트
-        // 위의 로직에서 준영속된 Auction에 대한 값을 다시 영속상태로 만들기
-        Auction refreshAuction = auctionRepository.findById(auctionId).get();
-        refreshAuction.setCurrentPrice(bidPrice);
-
-
-        log.info("[Auction Info] 경매번호 :{} , 현재가 : {} , 입찰가 : {}", auctionId, auction.getCurrentPrice(), bidPrice);
-
-        // 이전 최고 입찰자 예약금 해제
-        topBid.ifPresent(prevTopBid -> {
-            int released = accountRepository.decreaseReservedBalance(
-                    prevTopBid.getMember().getId(),
-                    prevTopBid.getBidPrice().longValue()
-            );
-
-            if (released == 0) {
-                throw new AccountException("이전 최고 입찰자의 예약금 해제에 실패했습니다.");
-            }
-        });
-
-        // 이벤트 발행
-        applicationEventPublisher.publishEvent(
-                new BidSubmittedEvent(
-                        auction.getId(),
-                        bidPrice,
-                        member.getNickname(),
-                        bid.getBidTime(),
-                        nextBidPrice,
-                        auction.getAuctionStatus().name(),
-                        auction.getEndDate()
-                )
-        );
-
-        // DTO 반환
-        return BidResponseDto.builder()
-                .currentPrice(bidPrice)
-                .highestBidderNickname(member.getNickname())
-                .bidTime(bid.getBidTime())
-                .build();
-    }
+//    /**
+//     * 입찰
+//     */
+//    @Transactional
+//    public BidResponseDto submitBid(Long auctionId, Long memberId, Integer expectedPrice) {
+//
+//        // 경매 조회 + Lock
+//        Auction auction = auctionRepository.findByAuctionWithLock(auctionId)
+//                .orElseThrow(() -> new AuctionException("경매가 존재하지 않습니다."));
+//
+//
+//        // 경매 상태 검증
+//        if (auction.getAuctionStatus() != AuctionStatus.PROGRESS) {
+//            throw new AuctionException("경매가 진행 중이 아닙니다.");
+//        }
+//
+//        Integer currentPrice = auction.getCurrentPrice();
+//        Integer bidPrice;
+//        Integer nextBidPrice;
+//
+//        // 첫 입찰
+//        if (currentPrice == null) {
+//
+//            // 첫 입찰은 시작가
+//            if (!expectedPrice.equals(auction.getStartPrice())) {
+//                throw new BidException(
+//                        "첫 입찰은 시작가여야 합니다.",
+//                        auction.getStartPrice(),
+//                        auction.getStartPrice()
+//                );
+//            }
+//
+//            bidPrice = auction.getStartPrice();
+//            nextBidPrice = bidPrice + calculateBidUnit(bidPrice);
+//
+//        } else {
+//            // 이후 입찰
+//            Integer bidUnit = calculateBidUnit(currentPrice);
+//            Integer expectedNextPrice = currentPrice + bidUnit;
+//
+//            if (expectedPrice < expectedNextPrice) {
+//                throw new BidException(
+//                        "최소 입찰 금액 이상으로 입찰해주세요.", currentPrice, expectedNextPrice
+//                );
+//            }
+//
+//            bidPrice = expectedPrice;
+//            nextBidPrice = bidPrice + calculateBidUnit(bidPrice);
+//        }
+//
+//        // 최고 입찰자 중복 방지
+//        Optional<Bid> topBid =
+//                bidRepository.findTopByAuctionIdOrderByBidPriceDesc(auctionId);
+//
+//        topBid.ifPresent(bid -> {
+//            if (bid.getMember().getId().equals(memberId)) {
+//                throw new BidException("이미 최고 입찰자입니다.");
+//            }
+//        });
+//
+//        // 6. 새 입찰자 예약금 확보 (하드 체크)
+//        int reserved = accountRepository.increaseReservedBalanceIfAvailable(
+//                memberId,
+//                bidPrice.longValue()
+//        );
+//
+//        if (reserved == 0) {
+//            log.info("[가용 잔액 부족] : 해당 회원번호 : {}", memberId);
+//            throw new BidException("가용 잔액이 부족하여 입찰할 수 없습니다.");
+//        }
+//
+//        // 회원 조회
+//        Member member = memberRepository.findById(memberId)
+//                .orElseThrow(() -> new MemberException("회원이 존재하지 않습니다."));
+//
+//        // Bid 저장
+//        Bid bid = new Bid(member, auction, bidPrice);
+//        bidRepository.save(bid);
+//
+//        // currentPrice 업데이트
+//        // 위의 로직에서 준영속된 Auction에 대한 값을 다시 영속상태로 만들기
+//        Auction refreshAuction = auctionRepository.findById(auctionId).get();
+//        refreshAuction.setCurrentPrice(bidPrice);
+//
+//
+//        log.info("[Auction Info] 경매번호 :{} , 현재가 : {} , 입찰가 : {}", auctionId, auction.getCurrentPrice(), bidPrice);
+//
+//        // 이전 최고 입찰자 예약금 해제
+//        topBid.ifPresent(prevTopBid -> {
+//            int released = accountRepository.decreaseReservedBalance(
+//                    prevTopBid.getMember().getId(),
+//                    prevTopBid.getBidPrice().longValue()
+//            );
+//
+//            if (released == 0) {
+//                throw new AccountException("이전 최고 입찰자의 예약금 해제에 실패했습니다.");
+//            }
+//        });
+//
+//        // 이벤트 발행
+//        applicationEventPublisher.publishEvent(
+//                new BidSubmittedEvent(
+//                        auction.getId(),
+//                        bidPrice,
+//                        member.getNickname(),
+//                        bid.getBidTime(),
+//                        nextBidPrice,
+//                        auction.getAuctionStatus().name(),
+//                        auction.getEndDate()
+//                )
+//        );
+//
+//        // DTO 반환
+//        return BidResponseDto.builder()
+//                .currentPrice(bidPrice)
+//                .highestBidderNickname(member.getNickname())
+//                .bidTime(bid.getBidTime())
+//                .build();
+//    }
 
     private Integer calculateBidUnit(Integer price) {
 
