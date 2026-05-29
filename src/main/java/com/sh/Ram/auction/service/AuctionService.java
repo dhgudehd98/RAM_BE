@@ -17,7 +17,6 @@ import com.sh.Ram.notification.service.NotificationService;
 import com.sh.Ram.product.repository.ProductRepository;
 import com.sh.Ram.redis.auction.dto.AuctionRealtimeDto;
 import com.sh.Ram.redis.auction.service.AuctionRedisCacheService;
-import com.sh.Ram.redis.auction.service.AuctionStreamService;
 import com.sh.Ram.wishList.repository.WishListRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,7 +48,7 @@ public class AuctionService {
     private final AuctionAgentRepository auctionAgentRepository;
     private final MemberRepository memberRepository;
 
-    private final AuctionStreamService auctionStreamService;
+//    private final AuctionStreamService auctionStreamService;
 
     @Transactional(readOnly = true)
     public Page<AuctionDto> auctionList(int page, String sort,  String status) {
@@ -132,7 +131,7 @@ public class AuctionService {
         auction.setAuctionStatus(AuctionStatus.PENDING);
 
         Auction saved = auctionRepository.save(auction);
-        auctionStreamService.createAuctionStream(saved);
+//        auctionStreamService.createAuctionStream(saved);
         return new AuctionDto(saved);
     }
 
