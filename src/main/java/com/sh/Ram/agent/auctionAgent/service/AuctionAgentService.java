@@ -4,13 +4,14 @@ import com.sh.Ram.auction.AgentStatus;
 import com.sh.Ram.auction.dto.AuctionAgentDto;
 import com.sh.Ram.auction.repository.AuctionAgentRepository;
 import com.sh.Ram.auction.repository.AuctionRepository;
+import com.sh.Ram.bid.dto.BidRequestDto;
 import com.sh.Ram.bid.service.BidService;
 import com.sh.Ram.common.exception.auctionAgent.AuctionAgentException;
 import com.sh.Ram.entity.Auction;
 import com.sh.Ram.entity.AuctionAgent;
 import com.sh.Ram.entity.Member;
 import com.sh.Ram.member.repository.MemberRepository;
-import com.sh.Ram.redis.auction.service.AuctionStreamService;
+//import com.sh.Ram.redis.auction.service.AuctionStreamService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.stream.Consumer;
@@ -29,7 +30,7 @@ import java.util.Optional;
 public class AuctionAgentService {
 
     private final AuctionAgentRepository auctionAgentRepository;
-    private final AuctionStreamService auctionStreamService;
+//    private final AuctionStreamService auctionStreamService;
     private final AuctionRepository auctionRepository;
     private final MemberRepository memberRepository;
     private final BidService bidService;
@@ -48,7 +49,7 @@ public class AuctionAgentService {
 
             // 경매 입찰 전략이 추적인 경우 Redis Stream에 저장된 해당 경매 구독 설정
             if (auctionAgentDto.getStrategyValue().equals("1")) {
-                auctionStreamService.registerAgentToStream(auctionAgent); // 해당 경매에 입찰이 들어오는지
+//                auctionStreamService.registerAgentToStream(auctionAgent); // 해당 경매에 입찰이 들어오는지
             }
 
             return Map.of(
@@ -81,8 +82,10 @@ public class AuctionAgentService {
                 return;
             }
 
+            BidRequestDto bidRequestDto = new BidRequestDto(auctionAgent.getMember().getId(), bidPrice);
+
             // Agent를 통해서 다시 입찰
-            bidService.submitBid(auctionAgent.getAuction().getId(), auctionAgent.getMember().getId(), nextBidPrice);
+            bidService.submitBidRedis(auctionAgent.getAuction().getId(), bidRequestDto);
         }
     }
 
