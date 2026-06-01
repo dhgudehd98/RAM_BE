@@ -108,6 +108,7 @@ public class AuctionResultJobConfig {
                 Long buyerId = topBid.getMember().getId();
 
                 result.setBuyerId(buyerId);
+                result.setSellerId(result.getAuction().getProduct().getId()); // 판매자 아이디 등록
                 result.setFinalPrice(topBid.getBidPrice());
                 result.setBidCount((int) bidRepository.countByAuctionId(auction.getId()));
                 result.setResultStatus("SUCCESS");

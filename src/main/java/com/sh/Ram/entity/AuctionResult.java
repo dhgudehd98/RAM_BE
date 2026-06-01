@@ -27,6 +27,9 @@ public class AuctionResult {
     @Column(name = "buyer_id", nullable = true)
     private Long buyerId;
 
+    @Column(name = "seller_id", nullable = false)
+    private Long sellerId;
+
     private Integer finalPrice;
 
     private Integer bidCount;
