@@ -8,6 +8,7 @@ import com.sh.Ram.bid.repository.BidRepository;
 import com.sh.Ram.common.exception.auctionResult.AuctionResultException;
 import com.sh.Ram.entity.*;
 import com.sh.Ram.product.repository.ProductRepository;
+import com.sh.Ram.trade.repository.TradeRepository;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
@@ -38,6 +39,7 @@ public class AuctionResultJobConfig {
     private final AuctionResultService auctionResultService;
     private final AdminAccountRepository adminAccountRepository;
     private final ProductRepository productRepository;
+    private final TradeRepository tradeRepository;
 
     @Bean
     public Job auctionResultJob(EntityManagerFactory emf) {
@@ -108,7 +110,7 @@ public class AuctionResultJobConfig {
                 Long buyerId = topBid.getMember().getId();
 
                 result.setBuyerId(buyerId);
-                result.setSellerId(result.getAuction().getProduct().getId()); // 판매자 아이디 등록
+                result.setSellerId(result.getAuction().getProduct().getMember().getId()); // 판매자 아이디 등록
                 result.setFinalPrice(topBid.getBidPrice());
                 result.setBidCount((int) bidRepository.countByAuctionId(auction.getId()));
                 result.setResultStatus("SUCCESS");
@@ -140,6 +142,9 @@ public class AuctionResultJobConfig {
                 }
 
                 auctionResultRepository.save(result);
+
+                // Trade 저장
+                tradeRepository.save(Trade.createTrade(result));
 
                 Product product = auction.getProduct();
                 product.setOnSale(true);
