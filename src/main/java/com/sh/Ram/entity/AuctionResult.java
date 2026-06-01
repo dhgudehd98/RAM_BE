@@ -39,7 +39,7 @@ public class AuctionResult {
 
     /**
      * 정산 상태
-     * NONE / HELD / SETTLED
+     * NONE / HELD(보류) / SETTLED(정산완료 - 판매자한테 지급)
      */
     private String settlementStatus;
 

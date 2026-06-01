@@ -27,7 +27,7 @@ public class AuctionResultService {
     public void processIn(Long buyerId, Long price) {
 
         Account buyer = accountRepository.findByMemberIdWithLock(buyerId);
-        AdminAccount admin = adminAccountRepository.findByIdWithLock(1L);
+        AdminAccount admin = adminAccountRepository.findByIdWithLock(2L);
 
         /**
          * 구매자 예약금 해제 및 실제 출금
