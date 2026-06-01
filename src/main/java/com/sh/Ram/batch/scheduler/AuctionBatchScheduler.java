@@ -39,7 +39,7 @@ public class AuctionBatchScheduler {
      * 경매 종료 배치
      * @throws Exception
      */
-    @Scheduled(cron = "0 0 0 * * *")
+//    @Scheduled(cron = "0 * * * * *")
     public void runAuctionEndBatch() throws Exception {
 
         log.info("Auction End Bulk Batch 실행");
@@ -51,7 +51,7 @@ public class AuctionBatchScheduler {
      * 경매 결과 배치 (낙찰 시 입금 처리 동시 진행)
      * 매일 00시 05분
      */
-    @Scheduled(cron = "0 5 0 * * *")
+//    @Scheduled(cron = "0 * * * * *")
     public void runAuctionResultBatch() throws Exception {
 
         log.info("Auction Result Batch 실행");
